@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <body>
+    <h1>Select Merchant</h1>
+
+<form action="/orders/<%= orderID%>/merchant" method="POST">
+
+<select name="merchant_partner_id">
+
+<% merchants.forEach(m => { %>
+
+<option value="<%= m.partner_id %>">
+<%= m.partner_name %>
+</option>
+
+<% }) %>
+
+</select>
+
+<h1>Select Driver</h1>
+
+
+
+<select name="driver_partner_id">
+
+<% drivers.forEach(m => { %>
+
+<option value="<%= m.partner_id %>">
+<%= m.partner_name %>
+</option>
+
+<% }) %>
+
+</select>
+
+<h1>Select Shippment</h1>
+
+
+
+<select name="shippment_id">
+
+<% shipments.forEach(m => { %>
+
+<option value="<%= m.shippment_id %>">
+<%= m.shipment_id %>
+</option>
+
+<% }) %>
+
+</select>
+
+<button type="submit">Next</button>
+
+
+
+</form>
+  </body>
+</html>

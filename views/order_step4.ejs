@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <body>
+    <h1>Set Commissions</h1>
+
+    <form action="/orders/<%= orderID %>/commissions" method="POST">
+      <label>Customer Delivery Price</label>
+      <input type="number" name="delivery_price" />
+
+      <label>Driver Commission</label>
+      <input type="number" name="driver_commission" />
+
+      <label>Merchant Commission</label>
+      <input type="number" name="merchant_commission" />
+
+      <button type="submit">Finish Order</button>
+    </form>
+  </body>
+</html>

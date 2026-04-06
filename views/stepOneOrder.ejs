@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>My First Web Page</title>
+  </head>
+  <body>
+    <h1>Create Order</h1>
+
+    <form action="/orders/new" method="POST">
+      <input type="text" name="receiptnum" placeholder="Receipt Number" />
+
+      <input type="text" name="phone" placeholder="Phone" />
+
+      <input type="text" name="second_phone" placeholder="Second Phone" />
+
+      <input type="text" name="notes" placeholder="Notes" />
+
+      <label for="retrieve">retrieve Item from customer</label>
+
+      <input type="checkbox" name="retrieve" />
+
+      <button type="submit">Next</button>
+    </form>
+  </body>
+</html>

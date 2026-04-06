@@ -1,0 +1,38 @@
+<h1>Shippment</h1>
+
+<a href="/orders/new" >Create order</a>
+
+<ul>
+        <%if (orders && orders.length>0){%>
+<% orders.forEach(order => { %>
+        <li>
+    
+        <h3><%= order.receiptnum %></h3>
+         <p><%= order.phone %></p>
+         
+         
+         <p><%= order.second_phone %></p>
+
+         <p><%= order.retrieve %></p>
+         
+         <p><%= order.notes %></p>
+
+     
+         
+        
+         
+         <p><%= order.merchant_partner_id %></p>
+         
+
+         <p><%= order.assigned_driver_id %></p>
+         </li>
+        
+
+
+      
+<% }) %>
+<% } else { %>
+  <li>No orders found.</li>
+<% } %>
+
+</ul>

@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <body>
+    <h1>Assign Address and City</h1>
+
+    <form action="/orders/<%= orderID %>/location" method="POST">
+      <label>movment type</label>
+      <input type="text" name="movement_type" />
+      <br />
+
+      <label>From Location</label>
+<select name="from_location_id">
+
+<% locations.forEach(location => { %>
+<option value="<%= location.location_id %>">
+<%= location.location_name %> - <%= location.partner_name %>
+</option>
+<% }) %>
+
+</select>
+
+<br>
+
+<label>To Location</label>
+<select name="to_location_id">
+
+<% locations.forEach(location => { %>
+<option value="<%= location.location_id %>">
+<%= location.location_name %> - <%= location.partner_name %>
+</option>
+<% }) %>
+
+</select>
+
+<br>
+
+      <br /><br />
+      <label>movment status</label>
+      <input type="text" name="movement_status" />
+      <br />
+
+      <button type="submit">Next</button>
+    </form>
+  </body>
+</html>
