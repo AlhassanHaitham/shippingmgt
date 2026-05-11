@@ -1,0 +1,147 @@
+<%- include('partials/header') %>
+
+<div class="max-w-5xl mx-auto mt-8 px-4 sm:px-6 lg:px-8">
+
+    <div class="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+        <div class="flex items-center gap-3">
+            <% const typeIcon = {
+                 driver: 'ph-steering-wheel',
+                 supplier: 'ph-storefront',
+                 merchant: 'ph-storefront',
+                 company: 'ph-buildings',
+                 customer: 'ph-user',
+               }[partner.partner_type] || 'ph-user-circle'; %>
+            <% const typeColor = {
+                 driver: 'orange',
+                 supplier: 'purple',
+                 merchant: 'purple',
+                 company: 'indigo',
+                 customer: 'blue',
+               }[partner.partner_type] || 'gray'; %>
+            <div class="w-14 h-14 rounded-2xl bg-<%= typeColor %>-100 flex items-center justify-center text-<%= typeColor %>-600">
+                <i class="ph <%= typeIcon %> text-3xl"></i>
+            </div>
+            <div>
+                <h1 class="text-2xl font-bold text-gray-900"><%= partner.partner_name || ('Partner #' + partner.partner_id) %></h1>
+                <p class="text-sm text-gray-500">
+                    <span class="px-2 py-0.5 rounded-full bg-<%= typeColor %>-100 text-<%= typeColor %>-700 text-xs font-bold uppercase"><%= partner.partner_type %></span>
+                    <span class="ml-2 font-mono">PARTNER-<%= partner.partner_id %></span>
+                </p>
+            </div>
+        </div>
+        <div class="flex gap-2">
+            <a href="<%= partner.partner_type === 'driver' ? '/drivers' : (partner.partner_type === 'company' ? '/orders' : '/merchants') %>" class="bg-white border border-gray-300 hover:bg-gray-50 px-4 py-2 rounded-xl text-sm font-medium text-gray-700 flex items-center gap-1.5">
+                <i class="ph ph-arrow-left"></i> Back
+            </a>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
+            <div class="flex items-center justify-between mb-2">
+                <h3 class="text-sm font-bold text-gray-500 uppercase tracking-wider">Accounts Receivable</h3>
+                <div class="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center text-green-600">
+                    <i class="ph ph-trend-up text-xl"></i>
+                </div>
+            </div>
+            <p class="text-3xl font-bold text-gray-900" dir="ltr">
+                <%= Number(ledger.ar_balance).toLocaleString(undefined, { maximumFractionDigits: 2 }) %>
+                <span class="text-sm font-normal text-gray-500"><%= t.currency %></span>
+            </p>
+            <p class="text-xs text-gray-600 mt-2">What this partner owes us</p>
+        </div>
+
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
+            <div class="flex items-center justify-between mb-2">
+                <h3 class="text-sm font-bold text-gray-500 uppercase tracking-wider">Accounts Payable</h3>
+                <div class="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center text-red-600">
+                    <i class="ph ph-trend-down text-xl"></i>
+                </div>
+            </div>
+            <p class="text-3xl font-bold text-gray-900" dir="ltr">
+                <%= Number(ledger.ap_balance).toLocaleString(undefined, { maximumFractionDigits: 2 }) %>
+                <span class="text-sm font-normal text-gray-500"><%= t.currency %></span>
+            </p>
+            <p class="text-xs text-gray-600 mt-2">What we owe this partner</p>
+            <% if (Number(ledger.ap_balance) > 0) { %>
+                <form action="/payments/new" method="POST" class="mt-3">
+                    <input type="hidden" name="payment_type" value="outgoing">
+                    <input type="hidden" name="partner_id" value="<%= partner.partner_id %>">
+                    <input type="hidden" name="amount" value="<%= ledger.ap_balance %>">
+                    <input type="hidden" name="notes" value="Full settle from partner page">
+                    <button type="submit" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-2.5 rounded-xl transition-colors flex items-center justify-center gap-2">
+                        <i class="ph ph-check-circle"></i> Mark Paid — Settle <%= Number(ledger.ap_balance).toLocaleString() %> <%= t.currency %>
+                    </button>
+                </form>
+            <% } else { %>
+                <p class="mt-3 text-sm text-green-700 font-medium flex items-center gap-1.5 bg-green-50 px-3 py-2 rounded-lg">
+                    <i class="ph ph-check-circle"></i> Fully settled.
+                </p>
+            <% } %>
+        </div>
+    </div>
+
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
+        <div class="px-6 py-4 border-b border-gray-200 bg-gray-50/50">
+            <h2 class="text-lg font-bold text-gray-800 flex items-center gap-2">
+                <i class="ph ph-list-numbers text-blue-600"></i> Transaction History
+            </h2>
+        </div>
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-4 py-3 text-start text-xs font-bold text-gray-500 uppercase">Date</th>
+                        <th class="px-4 py-3 text-start text-xs font-bold text-gray-500 uppercase">Description</th>
+                        <th class="px-4 py-3 text-start text-xs font-bold text-gray-500 uppercase">Account</th>
+                        <th class="px-4 py-3 text-end text-xs font-bold text-gray-500 uppercase">Debit</th>
+                        <th class="px-4 py-3 text-end text-xs font-bold text-gray-500 uppercase">Credit</th>
+                        <th class="px-4 py-3 text-end text-xs font-bold text-gray-500 uppercase">Order</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-100">
+                    <% if (ledger.transactions && ledger.transactions.length > 0) { %>
+                        <% ledger.transactions.forEach(function(tx) { %>
+                            <tr class="hover:bg-gray-50 <%= tx.is_reversal ? 'bg-yellow-50/30' : '' %>">
+                                <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500" dir="ltr">
+                                    <%= tx.transaction_date ? new Date(tx.transaction_date).toLocaleDateString() : '' %>
+                                </td>
+                                <td class="px-4 py-3 text-sm text-gray-700">
+                                    <%= tx.description %>
+                                    <% if (tx.is_reversal) { %><span class="ml-2 text-xs font-bold text-yellow-700 bg-yellow-100 px-1.5 py-0.5 rounded">REVERSAL</span><% } %>
+                                </td>
+                                <td class="px-4 py-3 whitespace-nowrap text-sm">
+                                    <span class="text-gray-600"><%= tx.account_name %></span>
+                                    <span class="ml-1 text-xs text-gray-400">(<%= tx.account_type %>)</span>
+                                </td>
+                                <td class="px-4 py-3 whitespace-nowrap text-end text-sm font-mono <%= tx.debit > 0 ? 'text-green-700 font-bold' : 'text-gray-300' %>" dir="ltr">
+                                    <%= tx.debit > 0 ? tx.debit.toLocaleString() : '—' %>
+                                </td>
+                                <td class="px-4 py-3 whitespace-nowrap text-end text-sm font-mono <%= tx.credit > 0 ? 'text-red-700 font-bold' : 'text-gray-300' %>" dir="ltr">
+                                    <%= tx.credit > 0 ? tx.credit.toLocaleString() : '—' %>
+                                </td>
+                                <td class="px-4 py-3 whitespace-nowrap text-end text-xs">
+                                    <% if (tx.order_id) { %>
+                                        <span class="text-blue-600 font-mono">ORD-<%= tx.order_id %></span>
+                                    <% } else { %>
+                                        <span class="text-gray-400">—</span>
+                                    <% } %>
+                                </td>
+                            </tr>
+                        <% }); %>
+                    <% } else { %>
+                        <tr>
+                            <td colspan="6" class="px-6 py-12 text-center text-gray-500">
+                                <i class="ph ph-receipt text-4xl mb-2 text-gray-300"></i>
+                                <p>No transactions yet for this partner.</p>
+                            </td>
+                        </tr>
+                    <% } %>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+
+<%- include('partials/footer') %>

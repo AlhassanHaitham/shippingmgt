@@ -9,10 +9,6 @@ node_modules/
 # Claude Code workspace
 .claude/
 
-# Legacy/parallel tree — contains a hardcoded Gemini API key.
-# Move/redact before re-introducing to git.
-shippingmgt/
-
 # OS
 .DS_Store
 Thumbs.db

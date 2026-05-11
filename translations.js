@@ -97,6 +97,9 @@ export const translations = {
     order_notes: "Order Notes",
     notes_placeholder: "Any special instructions for the driver...",
     next_location: "Next: Location Details",
+    order_value: "Order Value",
+    order_value_desc: "merchant's price for this order",
+    order_value_placeholder: "e.g. 50000",
 
     step_2_title: "Step 2: Location Details",
     movement_type: "Movement Type",
@@ -121,6 +124,9 @@ export const translations = {
     shipment_manifest: "Shipment / Manifest",
     select_shipment: "Select a shipment...",
     next_commissions: "Next: Financial Details",
+    company: "Company",
+    company_optional: "(optional)",
+    select_company: "— No company —",
 
     step_4_title: "Step 4: Financial Details",
     delivery_price: "Delivery Price",
@@ -128,6 +134,13 @@ export const translations = {
     merchant_commission: "Merchant Commission",
     price_placeholder: "e.g. 5000",
     complete_order: "Complete Order",
+    profit: "Your Profit",
+    profit_placeholder: "e.g. 2000",
+    company_commission: "Company Commission",
+    merchant_payout: "Merchant Payout",
+    merchant_payout_desc: "What's left after profit + commissions — owed back to the merchant",
+    order_value_locked: "Order value (set on step 1)",
+    no_company_assigned: "No company assigned on step 3",
 
     support_title: "AI Logistics Assistant",
     support_desc: "Ask our AI about Iraqi transport laws, customs, or provincial regulations.",

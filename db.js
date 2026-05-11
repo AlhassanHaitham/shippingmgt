@@ -56,13 +56,20 @@ export async function inserOrder(
   second_phone,
   retrievevalue,
   notes,
+  order_value,
 ) {
   const [result] = await db.query(
-    "insert into orders (receiptnum, phone, second_phone, retrieve, notes) values (?,?,?,?,?)",
-    [receiptnum, phone, second_phone, retrievevalue, notes],
+    "insert into orders (receiptnum, phone, second_phone, retrieve, notes, order_value) values (?,?,?,?,?,?)",
+    [receiptnum, phone, second_phone, retrievevalue, notes, order_value ?? null],
   );
-  console.log(retrievevalue);
   return result;
+}
+
+export async function listCompanies() {
+  const [rows] = await db.query(
+    "SELECT partner_id, partner_name FROM partners WHERE partner_type = 'company' ORDER BY partner_name",
+  );
+  return rows;
 }
 
 export async function getLocations() {
@@ -400,13 +407,25 @@ export async function getAllOrdersDetails() {
       o.order_id,
       o.receiptnum,
       o.phone,
+      o.second_phone,
       o.notes,
+      o.retrieve,
+      o.order_value,
+      o.profit,
+      o.driver_commission,
+      o.company_commission,
+      o.status,
+      o.merchant_partner_id,
+      o.assigned_driver_id,
+      o.company_partner_id,
+      o.shipment_id,
       m.partner_name AS merchant_name,
       d.partner_name AS driver_name,
-      o.shipment_id
+      c.partner_name AS company_name
     FROM orders o
     LEFT JOIN partners m ON o.merchant_partner_id = m.partner_id
     LEFT JOIN partners d ON o.assigned_driver_id = d.partner_id
+    LEFT JOIN partners c ON o.company_partner_id = c.partner_id
     ORDER BY o.order_id DESC
   `);
   return rows;
@@ -555,14 +574,56 @@ export async function createTransactionWithLines({
   }
 }
 
+// Profit-split bookkeeping for an order.
+//
+// Model: the merchant sets order_value (what the customer pays). We split it:
+//   profit              -> Revenue (ours)
+//   driver_commission   -> AP-Driver  (owed to the driver)
+//   company_commission  -> AP-Company (owed to the other company, if any)
+//   merchant_payout     -> AP-Merchant (the remainder we owe back to the merchant)
+//
+// One balanced transaction per order:
+//   DR AR order_value
+//   CR Revenue        profit
+//   CR AP-Driver      driver_commission
+//   CR AP-Company     company_commission
+//   CR AP-Merchant    order_value - profit - driver_commission - company_commission
 export async function recordCommissionsBookkeeping({
   orderID,
-  delivery_price,
-  driver_commission,
-  merchant_commission,
-  driver_partner_id,
-  merchant_partner_id,
+  profit = 0,
+  driver_commission = 0,
+  company_commission = 0,
+  driver_partner_id = null,
+  merchant_partner_id = null,
+  company_partner_id = null,
 }) {
+  const [[order]] = await db.query(
+    "SELECT order_value FROM orders WHERE order_id = ?",
+    [orderID],
+  );
+  const orderValue = Number(order?.order_value || 0);
+  if (orderValue <= 0) {
+    throw new Error(
+      `Order #${orderID} has no order_value set; cannot record commissions`,
+    );
+  }
+
+  const profitNum = Number(profit) || 0;
+  const driverComm = Number(driver_commission) || 0;
+  const companyComm = Number(company_commission) || 0;
+  const merchantPayout = orderValue - profitNum - driverComm - companyComm;
+
+  if (merchantPayout < -0.005) {
+    throw new Error(
+      `Allocations exceed order_value (profit ${profitNum} + driver ${driverComm} + company ${companyComm} = ${profitNum + driverComm + companyComm} > order_value ${orderValue})`,
+    );
+  }
+  if (merchantPayout > 0 && !merchant_partner_id) {
+    throw new Error(
+      `Order #${orderID} has remainder ${merchantPayout} but no merchant_partner_id to credit`,
+    );
+  }
+
   const arAccount = await getOrCreateAccount(
     "AR",
     null,
@@ -573,26 +634,16 @@ export async function recordCommissionsBookkeeping({
     null,
     "Delivery Revenue",
   );
-  const expenseAccount = await getOrCreateAccount(
-    "expense",
-    null,
-    "Delivery Expense",
-  );
 
-  // 1. Customer owes us the delivery fee: DR AR, CR Revenue
-  if (delivery_price > 0) {
-    await createTransactionWithLines({
-      description: `Order #${orderID} delivery fee`,
-      order_id: orderID,
-      lines: [
-        { account_id: arAccount, debit: delivery_price, credit: 0 },
-        { account_id: revenueAccount, debit: 0, credit: delivery_price },
-      ],
-    });
+  const lines = [
+    { account_id: arAccount, debit: orderValue, credit: 0 },
+  ];
+
+  if (profitNum > 0) {
+    lines.push({ account_id: revenueAccount, debit: 0, credit: profitNum });
   }
 
-  // 2. We owe the driver their commission: DR Expense, CR AP-Driver
-  if (driver_commission > 0 && driver_partner_id) {
+  if (driverComm > 0 && driver_partner_id) {
     const [[driver]] = await db.query(
       "SELECT partner_name FROM partners WHERE partner_id = ?",
       [driver_partner_id],
@@ -602,18 +653,23 @@ export async function recordCommissionsBookkeeping({
       driver_partner_id,
       `AP - ${driver ? driver.partner_name : "Driver"}`,
     );
-    await createTransactionWithLines({
-      description: `Order #${orderID} driver commission`,
-      order_id: orderID,
-      lines: [
-        { account_id: expenseAccount, debit: driver_commission, credit: 0 },
-        { account_id: apDriver, debit: 0, credit: driver_commission },
-      ],
-    });
+    lines.push({ account_id: apDriver, debit: 0, credit: driverComm });
   }
 
-  // 3. We owe the merchant their commission: DR Expense, CR AP-Merchant
-  if (merchant_commission > 0 && merchant_partner_id) {
+  if (companyComm > 0 && company_partner_id) {
+    const [[company]] = await db.query(
+      "SELECT partner_name FROM partners WHERE partner_id = ?",
+      [company_partner_id],
+    );
+    const apCompany = await getOrCreateAccount(
+      "AP",
+      company_partner_id,
+      `AP - ${company ? company.partner_name : "Company"}`,
+    );
+    lines.push({ account_id: apCompany, debit: 0, credit: companyComm });
+  }
+
+  if (merchantPayout > 0) {
     const [[merchant]] = await db.query(
       "SELECT partner_name FROM partners WHERE partner_id = ?",
       [merchant_partner_id],
@@ -623,15 +679,16 @@ export async function recordCommissionsBookkeeping({
       merchant_partner_id,
       `AP - ${merchant ? merchant.partner_name : "Merchant"}`,
     );
-    await createTransactionWithLines({
-      description: `Order #${orderID} merchant commission`,
-      order_id: orderID,
-      lines: [
-        { account_id: expenseAccount, debit: merchant_commission, credit: 0 },
-        { account_id: apMerchant, debit: 0, credit: merchant_commission },
-      ],
-    });
+    lines.push({ account_id: apMerchant, debit: 0, credit: merchantPayout });
   }
+
+  await createTransactionWithLines({
+    description: `Order #${orderID} financial split`,
+    order_id: orderID,
+    lines,
+  });
+
+  return { orderValue, profit: profitNum, driverComm, companyComm, merchantPayout };
 }
 
 export async function getAccountingSummary() {
@@ -795,6 +852,249 @@ export async function getAccounts() {
     ORDER BY a.account_type, a.account_name
   `);
   return rows;
+}
+
+// ─── order edit / status / per-partner ledger ────────────────────────────
+
+export async function getOrderById(orderID) {
+  const [[order]] = await db.query(
+    `SELECT
+       o.*,
+       m.partner_name AS merchant_name,
+       d.partner_name AS driver_name,
+       c.partner_name AS company_name
+     FROM orders o
+     LEFT JOIN partners m ON o.merchant_partner_id = m.partner_id
+     LEFT JOIN partners d ON o.assigned_driver_id = d.partner_id
+     LEFT JOIN partners c ON o.company_partner_id = c.partner_id
+     WHERE o.order_id = ?`,
+    [orderID],
+  );
+  return order || null;
+}
+
+// Store the planned commission split on the order row; do NOT post a transaction.
+// Posting happens on status → Delivered.
+export async function setOrderCommissionPlan(
+  orderID,
+  profit,
+  driver_commission,
+  company_commission,
+) {
+  await db.query(
+    "UPDATE orders SET profit = ?, driver_commission = ?, company_commission = ? WHERE order_id = ?",
+    [
+      Number(profit) || 0,
+      Number(driver_commission) || 0,
+      Number(company_commission) || 0,
+      orderID,
+    ],
+  );
+}
+
+// Update arbitrary order fields with COALESCE so unspecified ones keep their value.
+// Pass `null` (not `undefined`) to skip a field.
+// status, if provided, goes through updateOrderStatus so accounting side-effects fire.
+export async function updateOrderFull(orderID, f) {
+  await db.query(
+    `UPDATE orders SET
+      receiptnum         = COALESCE(?, receiptnum),
+      phone              = COALESCE(?, phone),
+      second_phone       = COALESCE(?, second_phone),
+      retrieve           = COALESCE(?, retrieve),
+      notes              = COALESCE(?, notes),
+      order_value        = COALESCE(?, order_value),
+      profit             = COALESCE(?, profit),
+      driver_commission  = COALESCE(?, driver_commission),
+      company_commission = COALESCE(?, company_commission),
+      merchant_partner_id  = COALESCE(?, merchant_partner_id),
+      assigned_driver_id   = COALESCE(?, assigned_driver_id),
+      company_partner_id   = COALESCE(?, company_partner_id),
+      shipment_id          = COALESCE(?, shipment_id)
+     WHERE order_id = ?`,
+    [
+      f.receiptnum ?? null,
+      f.phone ?? null,
+      f.second_phone ?? null,
+      f.retrieve ?? null,
+      f.notes ?? null,
+      f.order_value ?? null,
+      f.profit ?? null,
+      f.driver_commission ?? null,
+      f.company_commission ?? null,
+      f.merchant_partner_id ?? null,
+      f.assigned_driver_id ?? null,
+      f.company_partner_id ?? null,
+      f.shipment_id ?? null,
+      orderID,
+    ],
+  );
+  if (f.status) {
+    await updateOrderStatus(orderID, f.status);
+  }
+}
+
+// Reverse the order's existing non-reversed transactions by posting a new
+// transaction whose lines have swapped debit/credit. is_reversal=1 marks it.
+export async function reverseOrderBookkeeping(orderID) {
+  const [originals] = await db.query(
+    "SELECT transaction_id FROM transactions WHERE order_id = ? AND is_reversal = 0",
+    [orderID],
+  );
+  if (originals.length === 0) return null;
+
+  const [reversals] = await db.query(
+    "SELECT COUNT(*) AS n FROM transactions WHERE order_id = ? AND is_reversal = 1",
+    [orderID],
+  );
+  if (reversals[0].n >= originals.length) return null; // already reversed
+
+  const txIds = originals.map((t) => t.transaction_id);
+  const [lines] = await db.query(
+    "SELECT account_id, debit, credit FROM transaction_lines WHERE transaction_id IN (?)",
+    [txIds],
+  );
+
+  const conn = await db.getConnection();
+  try {
+    await conn.beginTransaction();
+    const [txRes] = await conn.query(
+      "INSERT INTO transactions (description, order_id, is_reversal) VALUES (?, ?, 1)",
+      [`Order #${orderID} reversal (returned / cancelled)`, orderID],
+    );
+    const txID = txRes.insertId;
+    for (const l of lines) {
+      // swap debit and credit
+      await conn.query(
+        "INSERT INTO transaction_lines (transaction_id, account_id, debit, credit) VALUES (?, ?, ?, ?)",
+        [txID, l.account_id, Number(l.credit), Number(l.debit)],
+      );
+    }
+    await conn.commit();
+    return txID;
+  } catch (err) {
+    await conn.rollback();
+    throw err;
+  } finally {
+    conn.release();
+  }
+}
+
+// Change order status, firing the right accounting side-effect:
+//   * → Delivered  : post the commission split (idempotent, skips if already posted)
+//   * → Returned   : post a reversal (idempotent, skips if no open posting)
+//   * → Cancelled  : post a reversal (idempotent, skips if no open posting)
+//   anything else  : just update status, no accounting
+export async function updateOrderStatus(orderID, newStatus) {
+  const [[order]] = await db.query(
+    `SELECT order_id, status, order_value, profit, driver_commission, company_commission,
+            merchant_partner_id, assigned_driver_id, company_partner_id
+       FROM orders WHERE order_id = ?`,
+    [orderID],
+  );
+  if (!order) throw new Error(`Order ${orderID} not found`);
+
+  const oldStatus = order.status;
+  if (oldStatus === newStatus) return { changed: false, oldStatus, newStatus };
+
+  // open_count = originals not yet reversed
+  const [[{ open_count }]] = await db.query(
+    `SELECT
+       SUM(CASE WHEN is_reversal = 0 THEN 1 ELSE 0 END) -
+       SUM(CASE WHEN is_reversal = 1 THEN 1 ELSE 0 END) AS open_count
+     FROM transactions WHERE order_id = ?`,
+    [orderID],
+  );
+  const hasOpenPosting = Number(open_count) > 0;
+
+  if (newStatus === "Delivered" && !hasOpenPosting) {
+    if (!order.order_value || Number(order.order_value) <= 0) {
+      throw new Error(
+        `Cannot deliver order #${orderID}: order_value is not set`,
+      );
+    }
+    await recordCommissionsBookkeeping({
+      orderID,
+      profit: Number(order.profit) || 0,
+      driver_commission: Number(order.driver_commission) || 0,
+      company_commission: Number(order.company_commission) || 0,
+      driver_partner_id: order.assigned_driver_id || null,
+      merchant_partner_id: order.merchant_partner_id || null,
+      company_partner_id: order.company_partner_id || null,
+    });
+  } else if (
+    (newStatus === "Returned" || newStatus === "Cancelled") &&
+    hasOpenPosting
+  ) {
+    await reverseOrderBookkeeping(orderID);
+  }
+
+  await db.query("UPDATE orders SET status = ? WHERE order_id = ?", [
+    newStatus,
+    orderID,
+  ]);
+  return { changed: true, oldStatus, newStatus };
+}
+
+export async function getPartner(partnerID) {
+  const [[p]] = await db.query(
+    "SELECT partner_id, partner_name, partner_type FROM partners WHERE partner_id = ?",
+    [partnerID],
+  );
+  return p || null;
+}
+
+// Per-partner ledger: balances on all of their accounts + a transaction history
+// involving any of those accounts.
+export async function getPartnerLedger(partnerID) {
+  const [accounts] = await db.query(
+    `SELECT a.account_id, a.account_name, a.account_type,
+       COALESCE(SUM(CASE WHEN tl.transaction_id IS NULL THEN 0
+                         WHEN a.account_type IN ('AR','expense','cash')
+                           THEN tl.debit - tl.credit
+                         ELSE tl.credit - tl.debit END), 0) AS balance
+     FROM accounts a
+     LEFT JOIN transaction_lines tl ON tl.account_id = a.account_id
+     WHERE a.partner_id = ?
+     GROUP BY a.account_id, a.account_name, a.account_type
+     ORDER BY a.account_type, a.account_name`,
+    [partnerID],
+  );
+
+  let arBalance = 0;
+  let apBalance = 0;
+  for (const a of accounts) {
+    if (a.account_type === "AR") arBalance += Number(a.balance);
+    else if (a.account_type === "AP") apBalance += Number(a.balance);
+  }
+
+  let lines = [];
+  if (accounts.length > 0) {
+    const accountIds = accounts.map((a) => a.account_id);
+    const [rows] = await db.query(
+      `SELECT tl.transaction_line_id, tl.transaction_id, tl.debit, tl.credit,
+              t.transaction_date, t.description, t.order_id, t.is_reversal,
+              a.account_name, a.account_type
+         FROM transaction_lines tl
+         JOIN transactions t ON tl.transaction_id = t.transaction_id
+         JOIN accounts a ON tl.account_id = a.account_id
+         WHERE tl.account_id IN (?)
+         ORDER BY t.transaction_date DESC, tl.transaction_line_id DESC`,
+      [accountIds],
+    );
+    lines = rows.map((r) => ({
+      ...r,
+      debit: Number(r.debit),
+      credit: Number(r.credit),
+    }));
+  }
+
+  return {
+    accounts: accounts.map((a) => ({ ...a, balance: Number(a.balance) })),
+    ar_balance: arBalance,
+    ap_balance: apBalance,
+    transactions: lines,
+  };
 }
 
 export default db;

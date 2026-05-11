@@ -76,7 +76,7 @@
                                         <div class="flex-shrink-0 h-8 w-8 bg-purple-100 rounded-full flex items-center justify-center text-purple-600 font-bold text-xs">
                                             <%= merchant.partner_name.charAt(0).toUpperCase() %>
                                         </div>
-                                        <div class="ms-3 text-sm font-medium text-gray-900"><%= merchant.partner_name %></div>
+                                        <a href="/partners/<%= merchant.partner_id %>" class="ms-3 text-sm font-medium text-gray-900 hover:text-purple-700"><%= merchant.partner_name %></a>
                                     </div>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
@@ -134,7 +134,7 @@
                                         <div class="flex-shrink-0 h-8 w-8 bg-orange-100 rounded-full flex items-center justify-center text-orange-600 font-bold text-xs">
                                             <%= driver.partner_name.charAt(0).toUpperCase() %>
                                         </div>
-                                        <div class="ms-3 text-sm font-medium text-gray-900"><%= driver.partner_name %></div>
+                                        <a href="/partners/<%= driver.partner_id %>" class="ms-3 text-sm font-medium text-gray-900 hover:text-orange-700"><%= driver.partner_name %></a>
                                     </div>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">

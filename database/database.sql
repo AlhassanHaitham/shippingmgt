@@ -2,8 +2,21 @@ CREATE DATABASE IF NOT EXISTS  shippingmgt;
 
 USE shippingmgt;
 
-create table orders (order_id int not null auto_increment primary key  , receiptnum int ,phone varchar(15), second_phone varchar(15)
-,retrieve boolean,notes varchar(90));
+create table orders (
+  order_id int not null auto_increment primary key,
+  receiptnum int,
+  phone varchar(15),
+  second_phone varchar(15),
+  retrieve boolean,
+  notes varchar(90),
+  order_value DECIMAL(10,2) DEFAULT NULL,
+  company_partner_id INT DEFAULT NULL,
+  status ENUM('Pending','Delivered','Returned','Cancelled') NOT NULL DEFAULT 'Pending',
+  profit DECIMAL(12,2) NOT NULL DEFAULT 0,
+  driver_commission DECIMAL(12,2) NOT NULL DEFAULT 0,
+  company_commission DECIMAL(12,2) NOT NULL DEFAULT 0
+  -- merchant_partner_id, assigned_driver_id, shipment_id added below
+);
 
 
  create table city (city_id int not null auto_increment primary key ,city_name varchar(11));
@@ -61,6 +74,9 @@ REFERENCES partners(partner_id);
 -- The legacy `drivers` table is unused; no FK is enforced here.
 ALTER TABLE orders add column assigned_driver_id int;
 
+ALTER TABLE orders ADD CONSTRAINT fk_orders_company
+  FOREIGN KEY (company_partner_id) REFERENCES partners(partner_id);
+
 -- commissions
 CREATE TABLE commissions (
     commission_id INT AUTO_INCREMENT PRIMARY KEY,
@@ -117,6 +133,7 @@ CREATE TABLE transactions (
   transaction_date DATETIME DEFAULT CURRENT_TIMESTAMP,
   description VARCHAR(255),
   order_id INT NULL,
+  is_reversal TINYINT(1) NOT NULL DEFAULT 0,
   CONSTRAINT fk_transactions_order FOREIGN KEY (order_id) REFERENCES orders(order_id) ON DELETE SET NULL
 );
 

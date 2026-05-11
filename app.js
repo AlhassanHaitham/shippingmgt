@@ -43,6 +43,13 @@ import {
   postingAllPartners,
   createLocation,
   listPartners,
+  listCompanies,
+  getOrderById,
+  setOrderCommissionPlan,
+  updateOrderFull,
+  updateOrderStatus,
+  getPartner,
+  getPartnerLedger,
 } from "./db.js";
 import { translations } from "./translations.js";
 
@@ -54,7 +61,20 @@ app.set("view engine", "ejs");
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-app.use(methodOverride("_method"));
+// method-override: read _method from query string OR from form body
+// (browser <form> can't natively PUT/DELETE, so we use a hidden _method field)
+app.use(
+  methodOverride(function (req) {
+    if (req.body && typeof req.body === "object" && "_method" in req.body) {
+      const m = req.body._method;
+      delete req.body._method;
+      return m;
+    }
+    if (req.query && req.query._method) {
+      return req.query._method;
+    }
+  }),
+);
 
 if (!process.env.SESSION_SECRET) {
   console.warn("SESSION_SECRET not set in .env — using insecure dev default");
@@ -167,11 +187,120 @@ app.post("/locations/new", requireAuth, async (req, res) => {
 // orders list (renders the orders.ejs table view with merchant/driver joined)
 app.get("/orders", requireAuth, async (req, res) => {
   try {
-    const orders = await getAllOrdersDetails();
-    res.render("orders", { orders });
+    const [orders, partnersAll, companies] = await Promise.all([
+      getAllOrdersDetails(),
+      allPartners(),
+      listCompanies(),
+    ]);
+    const merchants = partnersAll.merchants.map((m) => ({
+      id: m.partner_id,
+      name: m.partner_name,
+    }));
+    const drivers = partnersAll.drivers.map((d) => ({
+      id: d.partner_id,
+      name: d.partner_name,
+    }));
+    const shipments = partnersAll.shipments.map((s) => ({
+      id: s.shippment_id,
+      name: `Shipment #${s.shippment_id}`,
+    }));
+    const companiesList = companies.map((c) => ({
+      id: c.partner_id,
+      name: c.partner_name,
+    }));
+    res.render("orders", {
+      orders,
+      merchants,
+      drivers,
+      shipments,
+      companies: companiesList,
+    });
   } catch (err) {
     console.error("Orders error:", err);
     res.status(500).send("Orders error");
+  }
+});
+
+// Update order — used by the inline edit modal on /orders.
+// Browser form submits via POST with `_method=PUT` (method-override middleware).
+app.put("/orders/update/:id", requireAuth, async (req, res) => {
+  try {
+    const orderID = Number(req.params.id);
+    const b = req.body || {};
+
+    // Numeric fields: convert empty strings to null
+    const num = (v) =>
+      v === undefined || v === null || v === "" ? null : Number(v);
+    let retrieve = null;
+    if (b.retrieve !== undefined) {
+      retrieve =
+        b.retrieve === "on" ||
+        b.retrieve === "1" ||
+        b.retrieve === 1 ||
+        b.retrieve === true
+          ? 1
+          : 0;
+    }
+
+    await updateOrderFull(orderID, {
+      receiptnum: num(b.receiptnum),
+      phone: b.phone || null,
+      second_phone: b.second_phone || null,
+      retrieve,
+      notes: b.notes || null,
+      order_value: num(b.order_value),
+      profit: num(b.profit),
+      driver_commission: num(b.driver_commission),
+      company_commission: num(b.company_commission),
+      merchant_partner_id: num(b.merchant_partner_id),
+      assigned_driver_id: num(b.driver_partner_id),
+      company_partner_id: num(b.company_partner_id),
+      shipment_id: num(b.shippment_id),
+      status: b.status || null, // triggers updateOrderStatus side-effects
+    });
+
+    if (typeof b.return_to === "string" && b.return_to.startsWith("/")) {
+      return res.redirect(b.return_to);
+    }
+    res.json({ message: "order updated" });
+  } catch (err) {
+    console.error("update order error:", err);
+    res.status(400).send("Could not update order: " + err.message);
+  }
+});
+
+// Status-only change. Used by the inline status dropdown on /orders.
+app.post("/orders/:id/status", requireAuth, async (req, res) => {
+  try {
+    const orderID = Number(req.params.id);
+    const newStatus = (req.body && req.body.status) || "";
+    const result = await updateOrderStatus(orderID, newStatus);
+    if (
+      typeof req.body.return_to === "string" &&
+      req.body.return_to.startsWith("/")
+    ) {
+      return res.redirect(req.body.return_to);
+    }
+    res.json({ message: "status updated", ...result });
+  } catch (err) {
+    console.error("status change error:", err);
+    res.status(400).send("Could not change status: " + err.message);
+  }
+});
+
+// Per-partner ledger page. Linkable from /merchants, /drivers, /accounting.
+app.get("/partners/:id", requireAuth, async (req, res) => {
+  try {
+    const partnerID = Number(req.params.id);
+    const [partner, ledger] = await Promise.all([
+      getPartner(partnerID),
+      getPartnerLedger(partnerID),
+    ]);
+    if (!partner) return res.status(404).send("Partner not found");
+    res.render("partner", { partner, ledger });
+  } catch (err) {
+    console.error("partner ledger error:", err);
+    res.status(500).send("Partner ledger error");
   }
 });
 
@@ -286,19 +415,23 @@ app.get("/orders/new", requireAuth, async (req, res) => {
 //create an order
 
 app.post("/orders/new", requireAuth, async (req, res) => {
-  const { receiptnum, phone, second_phone, retrieve, notes } = req.body;
+  const { receiptnum, phone, second_phone, retrieve, notes, order_value } =
+    req.body;
   const retrievevalue = retrieve ? 1 : 0;
-  console.log("here", retrieve, "vs", retrievevalue);
+  const orderValue =
+    order_value && order_value !== "" ? parseFloat(order_value) : null;
+  if (orderValue !== null && (isNaN(orderValue) || orderValue < 0)) {
+    return res.status(400).send("order_value must be a non-negative number");
+  }
   const result = await inserOrder(
     receiptnum,
     phone,
     second_phone,
     retrievevalue,
     notes,
+    orderValue,
   );
   const orderID = result.insertId;
-  console.log("order is is here", orderID);
-  //you must redirect to step two
   res.redirect(`/orders/${orderID}/location`);
 });
 
@@ -335,7 +468,7 @@ app.post("/orders/:id/location", requireAuth, async (req, res) => {
 //merchant shippment and driver
 app.get("/orders/:id/merchant", requireAuth, async (req, res) => {
   const orderID = req.params.id;
-  const raw = await allPartners();
+  const [raw, companies] = await Promise.all([allPartners(), listCompanies()]);
   const merchants = raw.merchants.map((m) => ({
     id: m.partner_id,
     name: m.partner_name,
@@ -348,18 +481,34 @@ app.get("/orders/:id/merchant", requireAuth, async (req, res) => {
     id: s.shippment_id,
     name: `Shipment #${s.shippment_id}`,
   }));
-  res.render("order_step3", { orderID, merchants, drivers, shipments });
+  const companyOptions = companies.map((c) => ({
+    id: c.partner_id,
+    name: c.partner_name,
+  }));
+  res.render("order_step3", {
+    orderID,
+    merchants,
+    drivers,
+    shipments,
+    companies: companyOptions,
+  });
 });
 
 app.post("/orders/:id/merchant", requireAuth, async (req, res) => {
   const orderID = req.params.id;
-  const { merchant_partner_id, driver_partner_id, shippment_id } = req.body;
+  const {
+    merchant_partner_id,
+    driver_partner_id,
+    shippment_id,
+    company_partner_id,
+  } = req.body;
   await db.query(
-    "UPDATE orders SET merchant_partner_id = ?, assigned_driver_id = ?, shipment_id = ? WHERE order_id = ?",
+    "UPDATE orders SET merchant_partner_id = ?, assigned_driver_id = ?, shipment_id = ?, company_partner_id = ? WHERE order_id = ?",
     [
       merchant_partner_id || null,
       driver_partner_id || null,
       shippment_id || null,
+      company_partner_id || null,
       orderID,
     ],
   );
@@ -368,101 +517,60 @@ app.post("/orders/:id/merchant", requireAuth, async (req, res) => {
 
 app.get("/orders/:id/commissions", requireAuth, async (req, res) => {
   const orderID = req.params.id;
-  res.render("order_step4", { orderID });
+  const [[order]] = await db.query(
+    `SELECT o.order_value,
+            m.partner_name AS merchant_name,
+            d.partner_name AS driver_name,
+            c.partner_name AS company_name,
+            o.company_partner_id
+       FROM orders o
+       LEFT JOIN partners m ON o.merchant_partner_id = m.partner_id
+       LEFT JOIN partners d ON o.assigned_driver_id = d.partner_id
+       LEFT JOIN partners c ON o.company_partner_id = c.partner_id
+       WHERE o.order_id = ?`,
+    [orderID],
+  );
+  res.render("order_step4", { orderID, order: order || {} });
 });
 
 app.post("/orders/:id/commissions", requireAuth, async (req, res) => {
   const orderID = req.params.id;
-  const delivery_price = parseFloat(req.body.delivery_price) || 0;
+  const profit = parseFloat(req.body.profit) || 0;
   const driver_commission = parseFloat(req.body.driver_commission) || 0;
-  const merchant_commission = parseFloat(req.body.merchant_commission) || 0;
+  const company_commission = parseFloat(req.body.company_commission) || 0;
 
-  await createCommissions(
-    delivery_price,
-    driver_commission,
-    merchant_commission,
-    orderID,
-  );
-
-  // Mirror into the double-entry ledger so /accounting reflects reality.
-  const [[order]] = await db.query(
-    "SELECT merchant_partner_id, assigned_driver_id FROM orders WHERE order_id = ?",
-    [orderID],
-  );
-  await recordCommissionsBookkeeping({
-    orderID: Number(orderID),
-    delivery_price,
-    driver_commission,
-    merchant_commission,
-    driver_partner_id: order?.assigned_driver_id || null,
-    merchant_partner_id: order?.merchant_partner_id || null,
-  });
-
-  res.redirect("/");
-});
-
-//update an order
-
-app.put("/orders/update/:id", requireAuth, async (req, res) => {
   try {
-    const orderID = req.params.id;
-    const {
-      assigned_driver_id,
-      shipment_id,
-      driver_partner_id,
-      merchant_partner_id,
-      merchant_commission,
-      driver_commission,
-    } = req.body || {};
-
-    const { from_location_id, to_location_id, movement_status } =
-      req.body || {};
-
-    console.log("body", req.body);
-
-    let { receiptnum, phone, second_phone, retrieve, notes } = req.body || {};
-    if (retrieve !== undefined) {
-      retrieve =
-        retrieve === true || retrieve === "true" || retrieve === "on" ? 1 : 0;
-    } else {
-      retrieve = null; // so COALESCE keeps old value
+    const [[order]] = await db.query(
+      "SELECT order_value FROM orders WHERE order_id = ?",
+      [orderID],
+    );
+    if (!order || !order.order_value || Number(order.order_value) <= 0) {
+      return res.status(400).send(
+        "This order has no order_value set. Go back to step 1 and enter the merchant's price.",
+      );
+    }
+    const orderValue = Number(order.order_value);
+    if (profit + driver_commission + company_commission > orderValue + 0.005) {
+      return res
+        .status(400)
+        .send(
+          `Allocations exceed order_value (${profit + driver_commission + company_commission} > ${orderValue})`,
+        );
     }
 
-    await updateOrder(
-      orderID,
-      receiptnum ?? null,
-      phone ?? null,
-      second_phone ?? null,
-      retrieve,
-      notes ?? null,
-    );
-
-    await updateOrderLocations(
-      from_location_id ?? null,
-      to_location_id ?? null,
-      movement_status ?? null,
-      orderID,
-    );
-
-    await updateOrderPartners(
-      orderID,
-      merchant_partner_id ?? null,
-      assigned_driver_id ?? null,
-      shipment_id ?? null,
-    );
-
-    await updateOrderCommissions({
-      orderID,
-      driver_partner_id,
-      merchant_partner_id,
+    // Store the planned split. No transaction posted yet —
+    // that happens when the order's status moves to "Delivered".
+    await setOrderCommissionPlan(
+      Number(orderID),
+      profit,
       driver_commission,
-      merchant_commission,
-    });
+      company_commission,
+    );
 
-    res.json({ message: "order updated" });
+    res.redirect("/orders");
   } catch (err) {
-    console.log(err);
-    res.status(500).json({ error: "update failed" });
+    console.error("commissions error:", err);
+    res.status(400).send("Could not save commission plan: " + err.message);
   }
 });
 
