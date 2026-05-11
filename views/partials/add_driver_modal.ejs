@@ -1,0 +1,32 @@
+<div id="driverModal" class="hidden fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-[100]">
+    <div class="bg-white w-full max-w-md rounded-3xl p-6 shadow-2xl">
+        <div class="flex items-center justify-between mb-4">
+            <h3 class="text-xl font-bold text-gray-900 flex items-center gap-2">
+                <i class="ph ph-steering-wheel text-orange-600"></i> Add New Driver
+            </h3>
+            <button type="button" onclick="document.getElementById('driverModal').classList.add('hidden')" class="text-gray-400 hover:text-gray-700 text-2xl leading-none">
+                <i class="ph ph-x"></i>
+            </button>
+        </div>
+
+        <form action="/partners/new" method="POST" class="space-y-4">
+            <input type="hidden" name="return_to" value="<%= locals.returnPath || '/' %>">
+            <input type="hidden" name="partner_type" value="driver">
+
+            <div>
+                <label class="block text-sm font-bold text-gray-700 mb-2">Driver Name</label>
+                <input type="text" name="partner_name" required maxlength="50" placeholder="e.g. Ahmed Hassan"
+                       class="block w-full rounded-xl border border-gray-300 bg-gray-50 focus:border-orange-500 focus:bg-white focus:ring-2 focus:ring-orange-200 text-gray-900 py-3 px-4 transition-all">
+            </div>
+
+            <p class="text-xs text-gray-500">Stored with <code>partner_type='driver'</code>. Appears on the Drivers page.</p>
+
+            <div class="flex gap-2 pt-4">
+                <button type="button" onclick="document.getElementById('driverModal').classList.add('hidden')" class="flex-1 py-3 rounded-xl font-bold text-gray-600 hover:bg-gray-100 transition-colors">Cancel</button>
+                <button type="submit" class="flex-1 py-3 bg-orange-600 hover:bg-orange-700 text-white rounded-xl font-bold transition-colors flex items-center justify-center gap-2">
+                    <i class="ph ph-plus-circle"></i> Add Driver
+                </button>
+            </div>
+        </form>
+    </div>
+</div>

@@ -1,38 +1,147 @@
-<h1>Shippment</h1>
+<%- include('partials/header') %>
 
-<a href="/orders/new" >Create order</a>
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
 
-<ul>
-        <%if (orders && orders.length>0){%>
-<% orders.forEach(order => { %>
-        <li>
-    
-        <h3><%= order.receiptnum %></h3>
-         <p><%= order.phone %></p>
-         
-         
-         <p><%= order.second_phone %></p>
+    <div class="bg-gradient-to-r from-blue-600 to-blue-800 rounded-2xl shadow-md p-6 sm:p-8 text-white flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div>
+            <h1 class="text-2xl sm:text-3xl font-bold tracking-tight"><%= t.welcome_admin %></h1>
+            <p class="text-blue-100 mt-1 text-sm sm:text-base"><%= t.dashboard_desc %></p>
+        </div>
+        <a href="/orders/new" class="bg-white text-blue-700 hover:bg-gray-50 font-bold py-2.5 px-5 rounded-xl transition-colors shadow-sm flex items-center gap-2 whitespace-nowrap w-full sm:w-auto justify-center">
+            <i class="ph ph-plus-circle text-xl"></i> <%= t.create_order %>
+        </a>
+    </div>
 
-         <p><%= order.retrieve %></p>
-         
-         <p><%= order.notes %></p>
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-5">
+        <h2 class="text-sm font-bold text-gray-500 uppercase tracking-wide mb-4 flex items-center gap-2">
+            <i class="ph ph-lightning text-blue-600"></i> Quick Actions
+        </h2>
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            <button type="button" onclick="document.getElementById('locationModal').classList.remove('hidden')"
+                    class="bg-white border-2 border-gray-100 hover:border-green-500 hover:bg-green-50 transition-all rounded-2xl p-4 flex flex-col items-center gap-2 group">
+                <div class="w-10 h-10 rounded-xl bg-green-100 group-hover:bg-green-200 flex items-center justify-center text-green-600">
+                    <i class="ph ph-map-pin-plus text-2xl"></i>
+                </div>
+                <span class="text-sm font-bold text-gray-700">Add Location</span>
+            </button>
+            <button type="button" onclick="document.getElementById('shipmentModal').classList.remove('hidden')"
+                    class="bg-white border-2 border-gray-100 hover:border-blue-500 hover:bg-blue-50 transition-all rounded-2xl p-4 flex flex-col items-center gap-2 group">
+                <div class="w-10 h-10 rounded-xl bg-blue-100 group-hover:bg-blue-200 flex items-center justify-center text-blue-600">
+                    <i class="ph ph-package text-2xl"></i>
+                </div>
+                <span class="text-sm font-bold text-gray-700">Add Shipment</span>
+            </button>
+            <button type="button" onclick="document.getElementById('merchantModal').classList.remove('hidden')"
+                    class="bg-white border-2 border-gray-100 hover:border-purple-500 hover:bg-purple-50 transition-all rounded-2xl p-4 flex flex-col items-center gap-2 group">
+                <div class="w-10 h-10 rounded-xl bg-purple-100 group-hover:bg-purple-200 flex items-center justify-center text-purple-600">
+                    <i class="ph ph-storefront text-2xl"></i>
+                </div>
+                <span class="text-sm font-bold text-gray-700">Add Merchant</span>
+            </button>
+            <button type="button" onclick="document.getElementById('driverModal').classList.remove('hidden')"
+                    class="bg-white border-2 border-gray-100 hover:border-orange-500 hover:bg-orange-50 transition-all rounded-2xl p-4 flex flex-col items-center gap-2 group">
+                <div class="w-10 h-10 rounded-xl bg-orange-100 group-hover:bg-orange-200 flex items-center justify-center text-orange-600">
+                    <i class="ph ph-steering-wheel text-2xl"></i>
+                </div>
+                <span class="text-sm font-bold text-gray-700">Add Driver</span>
+            </button>
+        </div>
+    </div>
 
-     
-         
-        
-         
-         <p><%= order.merchant_partner_id %></p>
-         
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
 
-         <p><%= order.assigned_driver_id %></p>
-         </li>
-        
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 flex items-center gap-4 hover:shadow-md transition-shadow">
+            <div class="w-12 h-12 rounded-xl bg-blue-100 flex items-center justify-center text-blue-600 flex-shrink-0">
+                <i class="ph ph-package text-2xl"></i>
+            </div>
+            <div>
+                <p class="text-sm font-semibold text-gray-500 uppercase tracking-wide"><%= t.total_orders %></p>
+                <h3 class="text-2xl font-bold text-gray-900"><%= stats.totalOrders %></h3>
+            </div>
+        </div>
 
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 flex items-center gap-4 hover:shadow-md transition-shadow">
+            <div class="w-12 h-12 rounded-xl bg-green-100 flex items-center justify-center text-green-600 flex-shrink-0">
+                <i class="ph ph-check-circle text-2xl"></i>
+            </div>
+            <div>
+                <p class="text-sm font-semibold text-gray-500 uppercase tracking-wide"><%= t.delivered %></p>
+                <h3 class="text-2xl font-bold text-gray-900"><%= stats.delivered %></h3>
+            </div>
+        </div>
 
-      
-<% }) %>
-<% } else { %>
-  <li>No orders found.</li>
-<% } %>
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 flex items-center gap-4 hover:shadow-md transition-shadow">
+            <div class="w-12 h-12 rounded-xl bg-orange-100 flex items-center justify-center text-orange-600 flex-shrink-0">
+                <i class="ph ph-truck text-2xl"></i>
+            </div>
+            <div>
+                <p class="text-sm font-semibold text-gray-500 uppercase tracking-wide"><%= t.on_the_road %></p>
+                <h3 class="text-2xl font-bold text-gray-900"><%= stats.onTheRoad %></h3>
+            </div>
+        </div>
 
-</ul>
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 flex items-center gap-4 hover:shadow-md transition-shadow">
+            <div class="w-12 h-12 rounded-xl bg-purple-100 flex items-center justify-center text-purple-600 flex-shrink-0">
+                <i class="ph ph-users text-2xl"></i>
+            </div>
+            <div>
+                <p class="text-sm font-semibold text-gray-500 uppercase tracking-wide"><%= t.active_partners %></p>
+                <h3 class="text-2xl font-bold text-gray-900"><%= stats.activePartners %></h3>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+        <div class="px-6 py-5 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
+            <h2 class="text-lg font-bold text-gray-800 flex items-center gap-2">
+                <i class="ph ph-clock-counter-clockwise text-blue-600"></i> <%= t.recent_activity %>
+            </h2>
+            <a href="/orders" class="text-sm font-semibold text-blue-600 hover:text-blue-800 transition-colors"><%= t.view_all %> &rarr;</a>
+        </div>
+
+        <div class="overflow-x-auto w-full">
+            <table class="min-w-full divide-y divide-gray-100">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-6 py-3 text-start text-xs font-bold text-gray-500 uppercase tracking-wider"><%= t.order_id %></th>
+                        <th class="px-6 py-3 text-start text-xs font-bold text-gray-500 uppercase tracking-wider"><%= t.receipt_no %></th>
+                        <th class="px-6 py-3 text-start text-xs font-bold text-gray-500 uppercase tracking-wider"><%= t.customer_phone %></th>
+                        <th class="px-6 py-3 text-start text-xs font-bold text-gray-500 uppercase tracking-wider"><%= t.merchant %></th>
+                        <th class="px-6 py-3 text-end text-xs font-bold text-gray-500 uppercase tracking-wider"><%= t.action %></th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-50">
+                    <% if (recentOrders && recentOrders.length > 0) { %>
+                        <% recentOrders.forEach(function(order) { %>
+                            <tr class="hover:bg-blue-50/50 transition-colors">
+                                <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-blue-600">ORD-<%= order.order_id %></td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900"><%= order.receiptnum || t.n_a %></td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700" dir="ltr"><%= order.phone %></td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700"><%= order.merchant_name || t.unassigned %></td>
+                                <td class="px-6 py-4 whitespace-nowrap text-end text-sm font-medium">
+                                    <a href="/orders" class="text-blue-600 hover:text-blue-900 bg-blue-50 px-3 py-1.5 rounded-md hover:bg-blue-100 transition-colors"><%= t.details %></a>
+                                </td>
+                            </tr>
+                        <% }); %>
+                    <% } else { %>
+                        <tr>
+                            <td colspan="5" class="px-6 py-12 text-center text-gray-500">
+                                <i class="ph ph-package text-4xl mb-2 text-gray-300"></i>
+                                <p><%= t.no_orders_found %></p>
+                            </td>
+                        </tr>
+                    <% } %>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+
+<%- include('partials/add_location_modal', { returnPath: '/' }) %>
+<%- include('partials/add_shipment_modal', { returnPath: '/' }) %>
+<%- include('partials/add_merchant_modal', { returnPath: '/' }) %>
+<%- include('partials/add_driver_modal', { returnPath: '/' }) %>
+
+<%- include('partials/footer') %>

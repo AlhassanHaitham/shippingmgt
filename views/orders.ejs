@@ -1,0 +1,124 @@
+<%- include('partials/header') %>
+
+<div class="max-w-7xl mx-auto mt-8 px-4 sm:px-6 lg:px-8">
+    
+    <div class="sm:flex sm:items-center sm:justify-between mb-8">
+        <div>
+            <h1 class="text-2xl font-bold text-gray-900 flex items-center gap-2">
+                <i class="ph ph-package text-blue-600"></i> <%= t.all_orders %>
+            </h1>
+            <p class="mt-2 text-sm text-gray-700"><%= t.orders_desc %></p>
+        </div>
+        
+        <div class="mt-4 sm:mt-0 relative w-full sm:w-80 flex items-center gap-4">
+            <div class="relative w-full">
+                <div class="absolute inset-y-0 start-0 ps-3 flex items-center pointer-events-none">
+                    <i class="ph ph-magnifying-glass text-gray-400 text-lg"></i>
+                </div>
+                <input type="text" id="orderSearch" placeholder="<%= t.search_placeholder %>" 
+                       class="block w-full ps-10 pe-3 py-2 border border-gray-300 rounded-lg leading-5 bg-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm transition-all shadow-sm">
+            </div>
+            <a href="/orders/new" class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors flex items-center gap-2 shadow-sm whitespace-nowrap">
+                <i class="ph ph-plus-circle text-lg"></i> <%= t.new_order %>
+            </a>
+        </div>
+    </div>
+
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden w-full">
+        <div class="overflow-x-auto w-full">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th scope="col" class="px-6 py-3 text-start text-xs font-bold text-gray-500 uppercase tracking-wider"><%= t.order_id || 'Order ID' %></th>
+                        <th scope="col" class="px-6 py-3 text-start text-xs font-bold text-gray-500 uppercase tracking-wider"><%= t.receipt_no %></th>
+                        <th scope="col" class="px-6 py-3 text-start text-xs font-bold text-gray-500 uppercase tracking-wider"><%= t.customer_phone %></th>
+                        <th scope="col" class="px-6 py-3 text-start text-xs font-bold text-gray-500 uppercase tracking-wider"><%= t.merchant %></th>
+                        <th scope="col" class="px-6 py-3 text-start text-xs font-bold text-gray-500 uppercase tracking-wider"><%= t.driver %></th>
+                        <th scope="col" class="px-6 py-3 text-end text-xs font-bold text-gray-500 uppercase tracking-wider"><%= t.actions %></th>
+                    </tr>
+                </thead>
+                <tbody id="orderTableBody" class="bg-white divide-y divide-gray-200">
+                    
+                    <% if (orders && orders.length > 0) { %>
+                        <% orders.forEach(function(order) { %>
+                            <tr class="order-row hover:bg-gray-50 transition-colors">
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="text-sm font-bold text-blue-600">ORD-<%= order.order_id %></div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="text-sm text-gray-900 font-medium"><%= order.receiptnum || t.n_a %></div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="text-sm text-gray-700" dir="ltr"><%= order.phone %></div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <% if (order.merchant_name) { %>
+                                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-sm font-medium bg-purple-50 text-purple-700 border border-purple-100">
+                                            <i class="ph ph-storefront"></i> <%= order.merchant_name %>
+                                        </span>
+                                    <% } else { %>
+                                        <span class="text-sm text-gray-400 italic"><%= t.unassigned %></span>
+                                    <% } %>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <% if (order.driver_name) { %>
+                                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-sm font-medium bg-orange-50 text-orange-700 border border-orange-100">
+                                            <i class="ph ph-steering-wheel"></i> <%= order.driver_name %>
+                                        </span>
+                                    <% } else { %>
+                                        <span class="text-sm text-gray-400 italic"><%= t.unassigned %></span>
+                                    <% } %>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-end text-sm font-medium">
+                                    <a href="#" class="text-blue-600 hover:text-blue-900 bg-blue-50 px-3 py-1.5 rounded-md hover:bg-blue-100 transition-colors"><%= t.details %></a>
+                                </td>
+                            </tr>
+                        <% }); %>
+                    <% } else { %>
+                        <tr id="no-results-row">
+                            <td colspan="6" class="px-6 py-12 text-center text-gray-500">
+                                <i class="ph ph-package text-4xl mb-2 text-gray-300"></i>
+                                <p><%= t.no_orders_found %></p>
+                            </td>
+                        </tr>
+                    <% } %>
+
+                </tbody>
+            </table>
+        </div>
+        
+        <div id="search-empty-state" class="hidden px-6 py-12 text-center text-gray-500">
+            <i class="ph ph-magnifying-glass text-4xl mb-2 text-gray-300"></i>
+            <p><%= t.no_orders_match %></p>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    document.getElementById('orderSearch').addEventListener('input', function(e) {
+        const searchTerm = e.target.value.toLowerCase();
+        const rows = document.querySelectorAll('#orderTableBody tr.order-row');
+        let visibleCount = 0;
+
+        rows.forEach(row => {
+            const rowText = row.textContent.toLowerCase();
+            
+            if (rowText.includes(searchTerm)) {
+                row.style.display = ''; 
+                visibleCount++;
+            } else {
+                row.style.display = 'none'; 
+            }
+        });
+
+        const emptyState = document.getElementById('search-empty-state');
+        if (visibleCount === 0 && rows.length > 0) {
+            emptyState.classList.remove('hidden');
+        } else {
+            emptyState.classList.add('hidden');
+        }
+    });
+</script>
+
+<%- include('partials/footer') %>

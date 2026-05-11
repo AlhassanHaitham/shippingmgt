@@ -1,50 +1,110 @@
-<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Document</title>
-  </head>
-  <body>
-    <h1>Assign Address and City</h1>
+<%- include('partials/header') %>
 
-    <form action="/orders/<%= orderID %>/location" method="POST">
-      <label>movment type</label>
-      <input type="text" name="movement_type" />
-      <br />
+<div class="max-w-3xl mx-auto mt-8 px-4 sm:px-6 lg:px-8">
+    
+    <div class="mb-8">
+        <h1 class="text-2xl font-bold text-gray-900 flex items-center gap-2">
+            <i class="ph ph-map-pin-line text-blue-600"></i> <%= t.create_new_order %>
+        </h1>
+        <p class="mt-2 text-sm text-gray-500 font-medium"><%= t.step_2_title %></p>
+        
+        <div class="w-full bg-gray-200 rounded-full h-2.5 mt-4">
+            <div class="bg-blue-600 h-2.5 rounded-full" style="width: 50%"></div>
+        </div>
+    </div>
 
-      <label>From Location</label>
-<select name="from_location_id">
+    <div class="flex justify-end mb-3">
+        <button type="button" onclick="document.getElementById('locationModal').classList.remove('hidden')"
+                class="bg-white border border-gray-300 hover:border-blue-500 hover:text-blue-700 text-gray-700 font-medium py-2 px-4 rounded-lg shadow-sm transition-colors flex items-center gap-2 text-sm">
+            <i class="ph ph-map-pin-plus"></i> Add New Location
+        </button>
+    </div>
 
-<% locations.forEach(location => { %>
-<option value="<%= location.location_id %>">
-<%= location.location_name %> - <%= location.partner_name %>
-</option>
-<% }) %>
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 sm:p-8">
+        <form action="/orders/<%= orderID %>/location" method="POST" class="space-y-6">
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <label for="movement_type" class="block text-sm font-bold text-gray-700 mb-2"><%= t.movement_type %></label>
+                    <div class="relative">
+                        <div class="absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none text-gray-400">
+                            <i class="ph ph-arrows-left-right text-lg"></i>
+                        </div>
+                        <select id="movement_type" name="movement_type" required
+                                class="block w-full rounded-xl border-gray-300 bg-gray-50 border focus:border-blue-500 focus:bg-white focus:ring-2 focus:ring-blue-200 text-gray-900 py-3 ps-10 pe-4 transition-all appearance-none">
+                            <option value="" disabled selected><%= t.select_type %></option>
+                            <option value="Delivery"><%= t.delivery %></option>
+                            <option value="Return"><%= t.return %></option>
+                            <option value="Transfer"><%= t.transfer %></option>
+                        </select>
+                    </div>
+                </div>
 
-</select>
+                <div>
+                    <label for="movement_status" class="block text-sm font-bold text-gray-700 mb-2"><%= t.movement_status %></label>
+                    <div class="relative">
+                        <div class="absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none text-gray-400">
+                            <i class="ph ph-activity text-lg"></i>
+                        </div>
+                        <select id="movement_status" name="movement_status" required
+                                class="block w-full rounded-xl border-gray-300 bg-gray-50 border focus:border-blue-500 focus:bg-white focus:ring-2 focus:ring-blue-200 text-gray-900 py-3 ps-10 pe-4 transition-all appearance-none">
+                            <option value="" disabled selected><%= t.select_status %></option>
+                            <option value="Pending"><%= t.status_pending %></option>
+                            <option value="In Transit"><%= t.status_in_transit %></option>
+                        </select>
+                    </div>
+                </div>
+            </div>
 
-<br>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-gray-100">
+                
+                <div>
+                    <label for="from_location_id" class="block text-sm font-bold text-gray-700 mb-2"><%= t.from_location %></label>
+                    <div class="relative">
+                        <div class="absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none text-gray-400">
+                            <i class="ph ph-map-pin text-lg text-orange-500"></i>
+                        </div>
+                        <select id="from_location_id" name="from_location_id" required
+                                class="block w-full rounded-xl border-gray-300 bg-gray-50 border focus:border-blue-500 focus:bg-white focus:ring-2 focus:ring-blue-200 text-gray-900 py-3 ps-10 pe-4 transition-all appearance-none">
+                            <option value="" disabled selected><%= t.select_location %></option>
+                            <% if (locals.locations && locations.length > 0) { %>
+                                <% locations.forEach(function(loc) { %>
+                                    <option value="<%= loc.id %>"><%= loc.name %></option>
+                                <% }); %>
+                            <% } %>
+                        </select>
+                    </div>
+                </div>
 
-<label>To Location</label>
-<select name="to_location_id">
+                <div>
+                    <label for="to_location_id" class="block text-sm font-bold text-gray-700 mb-2"><%= t.to_location %></label>
+                    <div class="relative">
+                        <div class="absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none text-gray-400">
+                            <i class="ph ph-flag-checkered text-lg text-green-500"></i>
+                        </div>
+                        <select id="to_location_id" name="to_location_id" required
+                                class="block w-full rounded-xl border-gray-300 bg-gray-50 border focus:border-blue-500 focus:bg-white focus:ring-2 focus:ring-blue-200 text-gray-900 py-3 ps-10 pe-4 transition-all appearance-none">
+                            <option value="" disabled selected><%= t.select_location %></option>
+                            <% if (locals.locations && locations.length > 0) { %>
+                                <% locations.forEach(function(loc) { %>
+                                    <option value="<%= loc.id %>"><%= loc.name %></option>
+                                <% }); %>
+                            <% } %>
+                        </select>
+                    </div>
+                </div>
+            </div>
 
-<% locations.forEach(location => { %>
-<option value="<%= location.location_id %>">
-<%= location.location_name %> - <%= location.partner_name %>
-</option>
-<% }) %>
+            <div class="pt-6 mt-6 border-t border-gray-100 flex justify-end">
+                <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-xl shadow-md hover:shadow-lg transition-all flex items-center gap-2">
+                    <%= t.next_merchant %> <i class="ph ph-arrow-right rtl:hidden"></i><i class="ph ph-arrow-left hidden rtl:block"></i>
+                </button>
+            </div>
 
-</select>
+        </form>
+    </div>
+</div>
 
-<br>
+<%- include('partials/add_location_modal', { returnPath: '/orders/' + orderID + '/location' }) %>
 
-      <br /><br />
-      <label>movment status</label>
-      <input type="text" name="movement_status" />
-      <br />
-
-      <button type="submit">Next</button>
-    </form>
-  </body>
-</html>
+<%- include('partials/footer') %>

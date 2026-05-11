@@ -1,0 +1,28 @@
+<div class="hidden md:flex items-center gap-6" id="nav-links">
+    </div>
+
+<script>
+    const role = '<%= (locals.user && user.role) || "admin" %>';
+    const navLinks = document.getElementById('nav-links');
+    
+    let links = `
+        <a href="/" class="flex items-center gap-1.5 hover:text-blue-200 font-medium text-sm py-2">
+            <i class="ph ph-squares-four text-lg"></i> <%= t.dashboard %>
+        </a>
+        <a href="/orders" class="flex items-center gap-1.5 hover:text-blue-200 font-medium text-sm py-2">
+            <i class="ph ph-package text-lg"></i> <%= t.orders %>
+        </a>`;
+
+    if (role === 'admin') {
+        links += `
+            <a href="/merchants" class="flex items-center gap-1.5 hover:text-blue-200 font-medium text-sm py-2"><i class="ph ph-storefront text-lg"></i> <%= t.merchants %></a>
+            <a href="/accounting" class="flex items-center gap-1.5 hover:text-blue-200 font-medium text-sm py-2"><i class="ph ph-calculator text-lg"></i> <%= t.accounting %></a>`;
+    } else if (role === 'merchant') {
+        links += `<a href="/accounting" class="flex items-center gap-1.5 hover:text-blue-200 font-medium text-sm py-2"><i class="ph ph-calculator text-lg"></i> My Balance</a>`;
+    } else if (role === 'driver') {
+        links = `<a href="/reports" class="flex items-center gap-1.5 hover:text-blue-200 font-medium text-sm py-2"><i class="ph ph-warning-circle text-lg"></i> Road Reports</a>`;
+    }
+
+    links += `<a href="/support" class="flex items-center gap-1.5 hover:text-blue-200 font-medium text-sm py-2"><i class="ph ph-robot text-lg"></i> <%= t.support %></a>`;
+    navLinks.innerHTML = links;
+</script>

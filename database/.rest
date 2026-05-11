@@ -1,0 +1,11 @@
+PUT http://localhost:3000/orders/update/1
+Content-Type: application/json
+
+{
+  "receiptnum": 123,
+  "phone": "07500000000",
+  "second_phone": "07511111111",
+  "retrieve": true,
+  "notes": "Updated order"
+}
+

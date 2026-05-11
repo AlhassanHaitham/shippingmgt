@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="<%= lang %>" dir="<%= dir %>">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ShipFlow Logistics</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+</head>
+<body class="bg-gray-100 min-h-screen text-gray-800 font-sans pb-10">
+
+<% const navRole = (locals.user && user.role) || 'admin'; %>
+
+<nav class="bg-blue-700 text-white shadow-md relative z-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex justify-between items-center h-16">
+
+            <a href="/" class="flex items-center gap-2 hover:opacity-80 transition-opacity">
+                <i class="ph ph-truck text-3xl"></i>
+                <span class="font-bold text-xl tracking-tight">ShipFlow</span>
+            </a>
+
+            <div class="hidden md:flex items-center gap-6">
+                <a href="/" class="flex items-center gap-1.5 hover:text-blue-200 transition-colors font-medium text-sm py-2">
+                    <i class="ph ph-squares-four text-lg"></i> <%= t.dashboard %>
+                </a>
+                <a href="/orders" class="flex items-center gap-1.5 hover:text-blue-200 transition-colors font-medium text-sm py-2">
+                    <i class="ph ph-package text-lg"></i> <%= t.orders %>
+                </a>
+                <% if (navRole === 'admin') { %>
+                    <a href="/merchants" class="flex items-center gap-1.5 hover:text-blue-200 transition-colors font-medium text-sm py-2">
+                        <i class="ph ph-storefront text-lg"></i> <%= t.merchants %>
+                    </a>
+                    <a href="/drivers" class="flex items-center gap-1.5 hover:text-blue-200 transition-colors font-medium text-sm py-2">
+                        <i class="ph ph-steering-wheel text-lg"></i> <%= t.drivers %>
+                    </a>
+                    <a href="/accounting" class="flex items-center gap-1.5 hover:text-blue-200 transition-colors font-medium text-sm py-2">
+                        <i class="ph ph-calculator text-lg"></i> <%= t.accounting %>
+                    </a>
+                <% } else if (navRole === 'merchant') { %>
+                    <a href="/accounting" class="flex items-center gap-1.5 hover:text-blue-200 transition-colors font-medium text-sm py-2">
+                        <i class="ph ph-calculator text-lg"></i> My Balance
+                    </a>
+                <% } else if (navRole === 'driver') { %>
+                    <a href="/reports" class="flex items-center gap-1.5 hover:text-blue-200 transition-colors font-medium text-sm py-2">
+                        <i class="ph ph-warning-circle text-lg"></i> Road Reports
+                    </a>
+                <% } %>
+                <a href="/support" class="flex items-center gap-1.5 hover:text-blue-200 transition-colors font-medium text-sm py-2">
+                    <i class="ph ph-robot text-lg"></i> <%= t.support %>
+                </a>
+            </div>
+
+            <div class="hidden md:flex items-center gap-4">
+                <div class="flex items-center gap-2 text-sm text-blue-200 px-4 border-gray-400/30 rtl:border-l ltr:border-r" style="border-inline-end-width: 1px;">
+                    <i class="ph ph-user-circle text-xl"></i>
+                    <span><%= (locals.user && user.username) || 'Guest' %></span>
+                </div>
+                <form action="/logout" method="POST" class="m-0">
+                    <button type="submit" class="flex items-center gap-1.5 bg-blue-800 hover:bg-blue-900 px-3 py-1.5 rounded-lg text-sm font-bold shadow-sm border border-blue-600">
+                        <i class="ph ph-sign-out text-lg"></i> <%= t.logout %>
+                    </button>
+                </form>
+            </div>
+
+            <div class="md:hidden flex items-center">
+                <button id="mobile-menu-btn" class="text-white hover:text-blue-200 focus:outline-none p-2">
+                    <i class="ph ph-list text-3xl"></i>
+                </button>
+            </div>
+
+        </div>
+    </div>
+
+    <div id="mobile-menu" class="hidden md:hidden bg-blue-800 shadow-xl absolute w-full left-0 z-40 border-t border-blue-600">
+        <div class="px-4 pt-2 pb-4 space-y-2">
+            <a href="/" class="block px-4 py-3 rounded-md text-base font-medium hover:bg-blue-700 transition-colors"><i class="ph ph-squares-four inline-block w-6"></i> <%= t.dashboard %></a>
+            <a href="/orders" class="block px-4 py-3 rounded-md text-base font-medium hover:bg-blue-700 transition-colors"><i class="ph ph-package inline-block w-6"></i> <%= t.orders %></a>
+            <% if (navRole === 'admin') { %>
+                <a href="/merchants" class="block px-4 py-3 rounded-md text-base font-medium hover:bg-blue-700 transition-colors"><i class="ph ph-storefront inline-block w-6"></i> <%= t.merchants %></a>
+                <a href="/drivers" class="block px-4 py-3 rounded-md text-base font-medium hover:bg-blue-700 transition-colors"><i class="ph ph-steering-wheel inline-block w-6"></i> <%= t.drivers %></a>
+                <a href="/accounting" class="block px-4 py-3 rounded-md text-base font-medium hover:bg-blue-700 transition-colors"><i class="ph ph-calculator inline-block w-6"></i> <%= t.accounting %></a>
+            <% } %>
+            <a href="/support" class="block px-4 py-3 rounded-md text-base font-medium hover:bg-blue-700 transition-colors"><i class="ph ph-robot inline-block w-6"></i> <%= t.support %></a>
+            <hr class="border-blue-600 my-2">
+            <form action="/logout" method="POST" class="m-0">
+                <button type="submit" class="w-full text-start px-4 py-3 text-red-300 hover:text-white rounded-md text-base font-bold hover:bg-red-700 transition-colors"><i class="ph ph-sign-out inline-block w-6"></i> <%= t.logout %></button>
+            </form>
+        </div>
+    </div>
+</nav>
+
+<script>
+    (function() {
+        const btn = document.getElementById('mobile-menu-btn');
+        const menu = document.getElementById('mobile-menu');
+        if (!btn || !menu) return;
+        const icon = btn.querySelector('i');
+        btn.addEventListener('click', () => {
+            menu.classList.toggle('hidden');
+            if (menu.classList.contains('hidden')) {
+                icon.classList.remove('ph-x');
+                icon.classList.add('ph-list');
+            } else {
+                icon.classList.remove('ph-list');
+                icon.classList.add('ph-x');
+            }
+        });
+    })();
+</script>

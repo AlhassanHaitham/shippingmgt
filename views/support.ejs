@@ -1,0 +1,103 @@
+<%- include('partials/header') %>
+
+<div class="max-w-4xl mx-auto mt-8 px-4">
+    
+    <div class="mb-6">
+        <h1 class="text-2xl font-bold text-gray-900 flex items-center gap-2">
+            <i class="ph ph-robot text-blue-600"></i> <%= t.support_title %>
+        </h1>
+        <p class="mt-1 text-sm text-gray-600"><%= t.support_desc %></p>
+    </div>
+
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-200 flex flex-col h-[600px]">
+        
+        <div id="chat-window" class="flex-1 overflow-y-auto p-6 space-y-4 bg-gray-50/50">
+            <div class="flex items-start gap-3">
+                <div class="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-white flex-shrink-0">
+                    <i class="ph ph-robot"></i>
+                </div>
+                <div class="bg-white border border-gray-200 rounded-2xl rounded-ss-none px-4 py-3 shadow-sm max-w-[80%]">
+                    <p class="text-sm text-gray-800">Hi! I'm your ShipFlow assistant. How can I help you with Iraqi logistics today?</p>
+                </div>
+            </div>
+        </div>
+
+        <div id="typing-indicator" class="hidden px-6 py-2">
+            <p class="text-xs text-gray-500 italic flex items-center gap-2">
+                <i class="ph ph-circle-notched animate-spin"></i> <%= t.ai_typing %>
+            </p>
+        </div>
+
+        <div class="p-4 border-t border-gray-100 bg-white rounded-b-2xl">
+            <form id="chat-form" class="flex gap-2">
+                <input type="text" id="user-input" 
+                       placeholder="<%= t.chat_placeholder %>"
+                       class="flex-1 bg-gray-100 border-none rounded-xl px-4 py-3 focus:ring-2 focus:ring-blue-500 transition-all text-sm">
+                <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl font-bold transition-all flex items-center gap-2">
+                    <span><%= t.send %></span>
+                    <i class="ph ph-paper-plane-right rtl:rotate-180"></i>
+                </button>
+            </form>
+            <p class="text-[10px] text-gray-400 mt-3 text-center uppercase tracking-widest">
+                <%= t.legal_disclaimer %>
+            </p>
+        </div>
+    </div>
+</div>
+
+<script>
+    const chatForm = document.getElementById('chat-form');
+    const userInput = document.getElementById('user-input');
+    const chatWindow = document.getElementById('chat-window');
+    const typingIndicator = document.getElementById('typing-indicator');
+
+    function addMessage(text, isUser = false) {
+        const msgDiv = document.createElement('div');
+        msgDiv.className = `flex items-start gap-3 ${isUser ? 'flex-row-reverse' : ''}`;
+        
+        msgDiv.innerHTML = `
+            <div class="w-8 h-8 rounded-full ${isUser ? 'bg-gray-800' : 'bg-blue-600'} flex items-center justify-center text-white flex-shrink-0">
+                <i class="ph ${isUser ? 'ph-user' : 'ph-robot'}"></i>
+            </div>
+            <div class="${isUser ? 'bg-blue-600 text-white rounded-se-none' : 'bg-white border border-gray-200 text-gray-800 rounded-ss-none'} rounded-2xl px-4 py-3 shadow-sm max-w-[80%]">
+                <p class="text-sm">${text}</p>
+            </div>
+        `;
+        
+        chatWindow.appendChild(msgDiv);
+        chatWindow.scrollTop = chatWindow.scrollHeight;
+    }
+
+    chatForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const message = userInput.value.trim();
+        if (!message) return;
+
+        // 1. Add User Message to UI
+        addMessage(message, true);
+        userInput.value = '';
+
+        // 2. Show Typing Indicator
+        typingIndicator.classList.remove('hidden');
+        chatWindow.scrollTop = chatWindow.scrollHeight;
+
+        try {
+            // 3. Call the API
+            const response = await fetch('/api/chat', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ message })
+            });
+            const data = await response.json();
+
+            // 4. Add AI Reply to UI
+            typingIndicator.classList.add('hidden');
+            addMessage(data.reply, false);
+        } catch (error) {
+            typingIndicator.classList.add('hidden');
+            addMessage("Sorry, I'm having trouble connecting to the brain. Try again later!", false);
+        }
+    });
+</script>
+
+<%- include('partials/footer') %>

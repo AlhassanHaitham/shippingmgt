@@ -1,0 +1,48 @@
+<%- include('partials/header') %>
+
+<div class="max-w-4xl mx-auto mt-8 px-4">
+    <div class="flex justify-between items-center mb-6">
+        <h1 class="text-2xl font-bold text-gray-900">Road Reports</h1>
+        <button onclick="document.getElementById('reportModal').classList.remove('hidden')" class="bg-blue-600 text-white px-4 py-2 rounded-xl font-bold flex items-center gap-2">
+            <i class="ph ph-plus-circle"></i> Add Report
+        </button>
+    </div>
+
+    <div class="flex gap-2 mb-6 overflow-x-auto pb-2">
+        <button class="bg-white border border-gray-300 px-4 py-1.5 rounded-full text-sm font-medium hover:bg-blue-50">All</button>
+        <button class="bg-white border border-gray-300 px-4 py-1.5 rounded-full text-sm font-medium hover:bg-blue-50">Traffic</button>
+        <button class="bg-white border border-gray-300 px-4 py-1.5 rounded-full text-sm font-medium hover:bg-blue-50">Checkpoints</button>
+        <button class="bg-white border border-gray-300 px-4 py-1.5 rounded-full text-sm font-medium hover:bg-blue-50">Weather</button>
+    </div>
+
+    <div class="space-y-4">
+        <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-200">
+            <div class="flex justify-between items-start mb-2">
+                <span class="bg-red-100 text-red-700 text-xs font-bold px-2 py-1 rounded">Traffic Issue</span>
+                <span class="text-gray-400 text-xs">2 hours ago</span>
+            </div>
+            <p class="text-gray-800 font-medium">Heavy traffic at Ibrahim Khalil border. Expect 3+ hours delay.</p>
+            <div class="mt-3 flex items-center gap-2 text-gray-500 text-xs">
+                <i class="ph ph-user"></i> Driver Ahmed
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="reportModal" class="hidden fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-[100]">
+    <div class="bg-white w-full max-w-md rounded-3xl p-6">
+        <h3 class="text-xl font-bold mb-4">New Report</h3>
+        <select class="w-full bg-gray-100 p-3 rounded-xl mb-4 border-none">
+            <option>Traffic Issue</option>
+            <option>Checkpoints</option>
+            <option>Weather</option>
+        </select>
+        <textarea placeholder="Describe the issue..." class="w-full bg-gray-100 p-3 rounded-xl mb-4 border-none h-32"></textarea>
+        <div class="flex gap-2">
+            <button onclick="document.getElementById('reportModal').classList.add('hidden')" class="flex-1 py-3 font-bold text-gray-500">Cancel</button>
+            <button class="flex-1 py-3 bg-blue-600 text-white rounded-xl font-bold">Submit</button>
+        </div>
+    </div>
+</div>
+
+<%- include('partials/footer') %>

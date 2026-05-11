@@ -1,0 +1,173 @@
+<%- include('partials/header') %>
+
+<div class="max-w-7xl mx-auto mt-8 px-4 sm:px-6 lg:px-8">
+    
+    <div class="mb-8">
+        <h1 class="text-2xl font-bold text-gray-900 flex items-center gap-2">
+            <i class="ph ph-chart-line-up text-blue-600"></i> <%= t.accounting_title %>
+        </h1>
+        <p class="mt-2 text-sm text-gray-700"><%= t.accounting_desc %></p>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 flex flex-col">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-sm font-bold text-gray-500 uppercase tracking-wider"><%= t.accounts_rec %></h3>
+                <div class="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center text-green-600">
+                    <i class="ph ph-trend-up text-xl"></i>
+                </div>
+            </div>
+            <p class="text-3xl font-bold text-gray-900" dir="ltr"><%= summary.receivables.toLocaleString() %> <span class="text-sm font-normal text-gray-500"><%= t.currency %></span></p>
+            <p class="text-xs text-green-600 mt-2 font-medium flex items-center gap-1">
+                <i class="ph ph-check-circle"></i> <%= t.ar_desc %>
+            </p>
+        </div>
+
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 flex flex-col">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-sm font-bold text-gray-500 uppercase tracking-wider"><%= t.accounts_pay %></h3>
+                <div class="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center text-red-600">
+                    <i class="ph ph-trend-down text-xl"></i>
+                </div>
+            </div>
+            <p class="text-3xl font-bold text-gray-900" dir="ltr"><%= summary.payables.toLocaleString() %> <span class="text-sm font-normal text-gray-500"><%= t.currency %></span></p>
+            <p class="text-xs text-red-600 mt-2 font-medium flex items-center gap-1">
+                <i class="ph ph-warning-circle"></i> <%= t.ap_desc %>
+            </p>
+        </div>
+
+        <div class="bg-gradient-to-br from-blue-600 to-blue-800 rounded-xl shadow-sm p-6 flex flex-col text-white">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-sm font-bold text-blue-200 uppercase tracking-wider"><%= t.estimated_profit %></h3>
+                <div class="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center text-white">
+                    <i class="ph ph-scales text-xl"></i>
+                </div>
+            </div>
+            <p class="text-3xl font-bold" dir="ltr"><%= summary.profit.toLocaleString() %> <span class="text-sm font-normal text-blue-200"><%= t.currency %></span></p>
+            <p class="text-xs text-blue-100 mt-2 font-medium flex items-center gap-1">
+                <i class="ph ph-info"></i> <%= t.profit_desc %>
+            </p>
+        </div>
+
+    </div>
+
+    <h2 class="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
+        <i class="ph ph-users"></i> <%= t.merchant_ledger %>
+    </h2>
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden w-full">
+        <div class="overflow-x-auto w-full">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th scope="col" class="px-6 py-3 text-start text-xs font-bold text-gray-500 uppercase tracking-wider"><%= t.merchant || 'Merchant' %></th>
+                        <th scope="col" class="px-6 py-3 text-start text-xs font-bold text-gray-500 uppercase tracking-wider"><%= t.completed_orders %></th>
+                        <th scope="col" class="px-6 py-3 text-end text-xs font-bold text-gray-500 uppercase tracking-wider"><%= t.total_owed %></th>
+                        <th scope="col" class="px-6 py-3 text-end text-xs font-bold text-gray-500 uppercase tracking-wider"><%= t.actions || 'Actions' %></th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    
+                    <% if (balances && balances.length > 0) { %>
+                        <% balances.forEach(function(merchant) { %>
+                            <tr class="hover:bg-gray-50 transition-colors">
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="flex items-center">
+                                        <div class="flex-shrink-0 h-8 w-8 bg-purple-100 rounded-full flex items-center justify-center text-purple-600 font-bold text-xs">
+                                            <%= merchant.partner_name.charAt(0).toUpperCase() %>
+                                        </div>
+                                        <div class="ms-3 text-sm font-medium text-gray-900"><%= merchant.partner_name %></div>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                    <%= merchant.orders_completed %> <%= t.orders_pending %>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-end font-bold text-red-600" dir="ltr">
+                                    <%= merchant.total_owed.toLocaleString() %> <%= t.currency %>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-end text-sm font-medium">
+                                    <form action="/payments/new" method="POST" class="inline">
+                                        <input type="hidden" name="payment_type" value="outgoing">
+                                        <input type="hidden" name="partner_id" value="<%= merchant.partner_id %>">
+                                        <input type="hidden" name="amount" value="<%= merchant.total_owed %>">
+                                        <input type="hidden" name="notes" value="Settle full balance">
+                                        <button type="submit" class="bg-green-100 text-green-700 hover:bg-green-200 px-3 py-1.5 rounded-md transition-colors font-bold"><%= t.settle_balance %></button>
+                                    </form>
+                                </td>
+                            </tr>
+                        <% }); %>
+                    <% } else { %>
+                        <tr>
+                            <td colspan="4" class="px-6 py-12 text-center text-gray-500">
+                                <i class="ph ph-check-circle text-4xl mb-2 text-green-400"></i>
+                                <p><%= t.no_balances %></p>
+                            </td>
+                        </tr>
+                    <% } %>
+
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <h2 class="text-lg font-bold text-gray-900 mb-4 mt-8 flex items-center gap-2">
+        <i class="ph ph-steering-wheel"></i> <%= t.driver_ledger %>
+    </h2>
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden w-full">
+        <div class="overflow-x-auto w-full">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-6 py-3 text-start text-xs font-bold text-gray-500 uppercase tracking-wider"><%= t.driver %></th>
+                        <th class="px-6 py-3 text-start text-xs font-bold text-gray-500 uppercase tracking-wider"><%= t.completed_orders %></th>
+                        <th class="px-6 py-3 text-end text-xs font-bold text-gray-500 uppercase tracking-wider"><%= t.total_owed %></th>
+                        <th class="px-6 py-3 text-end text-xs font-bold text-gray-500 uppercase tracking-wider"><%= t.actions %></th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+
+                    <% if (driverBalances && driverBalances.length > 0) { %>
+                        <% driverBalances.forEach(function(driver) { %>
+                            <tr class="hover:bg-gray-50 transition-colors">
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="flex items-center">
+                                        <div class="flex-shrink-0 h-8 w-8 bg-orange-100 rounded-full flex items-center justify-center text-orange-600 font-bold text-xs">
+                                            <%= driver.partner_name.charAt(0).toUpperCase() %>
+                                        </div>
+                                        <div class="ms-3 text-sm font-medium text-gray-900"><%= driver.partner_name %></div>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                    <%= driver.orders_completed %> <%= t.orders_pending %>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-end font-bold text-red-600" dir="ltr">
+                                    <%= driver.total_owed.toLocaleString() %> <%= t.currency %>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-end text-sm font-medium">
+                                    <form action="/payments/new" method="POST" class="inline">
+                                        <input type="hidden" name="payment_type" value="outgoing">
+                                        <input type="hidden" name="partner_id" value="<%= driver.partner_id %>">
+                                        <input type="hidden" name="amount" value="<%= driver.total_owed %>">
+                                        <input type="hidden" name="notes" value="Settle full balance">
+                                        <button type="submit" class="bg-green-100 text-green-700 hover:bg-green-200 px-3 py-1.5 rounded-md transition-colors font-bold"><%= t.settle_balance %></button>
+                                    </form>
+                                </td>
+                            </tr>
+                        <% }); %>
+                    <% } else { %>
+                        <tr>
+                            <td colspan="4" class="px-6 py-12 text-center text-gray-500">
+                                <i class="ph ph-check-circle text-4xl mb-2 text-green-400"></i>
+                                <p><%= t.no_driver_balances %></p>
+                            </td>
+                        </tr>
+                    <% } %>
+
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+
+<%- include('partials/footer') %>

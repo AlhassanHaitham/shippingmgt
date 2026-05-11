@@ -29,14 +29,7 @@ alter table order_movements add constraint fk_to_location_id foreign key (to_loc
 
 
 alter table order_movements add movement_status varchar(30);
-create table accounts(account_id int primary key ,account_name varchar(30),account_type ENUM("cash","AR","AP","expence","revenue"));
-create table transactions (transaction_id int primary key,transaction_date date, description varchar(30));
-create table transaction_lines(transaction_line_id int primary key , debit double,credit double);
-alter table   transaction_lines add column accout_id int,add constraint fk_lines_account_id foreign key  (accout_id) references accounts(account_id);
-alter table transaction_lines add column transaction_id int ,add constraint fk_transactionID_lines foreign key (transaction_id) references transactions(transaction_id);
-create table payment (payment_id int primary key, payment_notes varchar(30),amout int);
-alter table payment add column account_recivalbe_id int ,add constraint fk_recive_AR foreign key (account_recivalbe_id) references  orders(order_id);
-alter table payment add column account_payable_id int ,add constraint fk_pay_AR foreign key (account_payable_id) references  orders(order_id);
+
 create table partners(
 partner_id int primary key auto_increment,
 partner_name varchar(50),
@@ -55,41 +48,20 @@ alter table shipments add column sender_partner_id int ,add constraint fk_shippm
 alter table shipments add column receiver_partner_id int ,add constraint fk_shippment_reciver foreign key (receiver_partner_id) references partners(partner_id);
 
 alter table orders add shipment_id int,add constraint fk_orders_shipment foreign key (shipment_id) references shipments(shippment_id);
-CREATE TABLE drivers (
-    driver_id INT AUTO_INCREMENT PRIMARY KEY,
-    driver_name VARCHAR(50),
-    phone VARCHAR(15)
-);
 
--- in orders 
+-- in orders
 -- merchant_partner_id     -- company that created the order
--- assigned_driver_id 
+-- assigned_driver_id      -- holds a partner_id; drivers are partners
 ALTER TABLE orders add column merchant_partner_id int,
 ADD CONSTRAINT fk_orders_merchant
 FOREIGN KEY (merchant_partner_id)
 REFERENCES partners(partner_id);
 
-ALTER TABLE orders add column assigned_driver_id int,
-ADD CONSTRAINT fk_orders_driver
-FOREIGN KEY (assigned_driver_id)
-REFERENCES drivers(driver_id);
+-- assigned_driver_id holds a partner_id (drivers are partners in this app).
+-- The legacy `drivers` table is unused; no FK is enforced here.
+ALTER TABLE orders add column assigned_driver_id int;
 
--- alter accounts to have parter_id 
 -- commissions
-ALTER TABLE accounts
-ADD partner_id INT;
-
-ALTER TABLE accounts
-ADD CONSTRAINT fk_accounts_partner
-FOREIGN KEY (partner_id)
-REFERENCES partners(partner_id);
-
--- commission_id
--- order_id
--- partner_id
--- commission_type
--- amount
-
 CREATE TABLE commissions (
     commission_id INT AUTO_INCREMENT PRIMARY KEY,
     order_id INT,
@@ -122,4 +94,59 @@ VALUES (1001, '0770000000', '0780000000', TRUE, 'Fragile', 1);
 INSERT INTO orders (receiptnum, phone, second_phone, retrieve, notes, address_id)
 VALUES (1002, '0750000000', NULL, FALSE, 'Handle carefully', 2);
 
+CREATE TABLE users (
+  user_id INT AUTO_INCREMENT PRIMARY KEY,
+  username VARCHAR(50) NOT NULL UNIQUE,
+  password_hash VARCHAR(255) NOT NULL,
+  role ENUM('admin','merchant','driver') NOT NULL DEFAULT 'admin',
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- double-entry accounting tables
+CREATE TABLE accounts (
+  account_id INT AUTO_INCREMENT PRIMARY KEY,
+  account_name VARCHAR(60) NOT NULL,
+  account_type ENUM('cash','AR','AP','expense','revenue') NOT NULL,
+  partner_id INT NULL,
+  UNIQUE KEY uniq_account_type_partner (account_type, partner_id),
+  CONSTRAINT fk_accounts_partner FOREIGN KEY (partner_id) REFERENCES partners(partner_id)
+);
+
+CREATE TABLE transactions (
+  transaction_id INT AUTO_INCREMENT PRIMARY KEY,
+  transaction_date DATETIME DEFAULT CURRENT_TIMESTAMP,
+  description VARCHAR(255),
+  order_id INT NULL,
+  CONSTRAINT fk_transactions_order FOREIGN KEY (order_id) REFERENCES orders(order_id) ON DELETE SET NULL
+);
+
+CREATE TABLE transaction_lines (
+  transaction_line_id INT AUTO_INCREMENT PRIMARY KEY,
+  transaction_id INT NOT NULL,
+  account_id INT NOT NULL,
+  debit DECIMAL(12,2) NOT NULL DEFAULT 0,
+  credit DECIMAL(12,2) NOT NULL DEFAULT 0,
+  CONSTRAINT fk_lines_transaction FOREIGN KEY (transaction_id) REFERENCES transactions(transaction_id) ON DELETE CASCADE,
+  CONSTRAINT fk_lines_account FOREIGN KEY (account_id) REFERENCES accounts(account_id)
+);
+
+CREATE TABLE payment (
+  payment_id INT AUTO_INCREMENT PRIMARY KEY,
+  payment_date DATETIME DEFAULT CURRENT_TIMESTAMP,
+  amount DECIMAL(12,2) NOT NULL,
+  payment_type ENUM('incoming','outgoing') NOT NULL,
+  partner_id INT NULL,
+  order_id INT NULL,
+  transaction_id INT NULL,
+  payment_notes VARCHAR(255),
+  CONSTRAINT fk_payment_partner FOREIGN KEY (partner_id) REFERENCES partners(partner_id),
+  CONSTRAINT fk_payment_order FOREIGN KEY (order_id) REFERENCES orders(order_id) ON DELETE SET NULL,
+  CONSTRAINT fk_payment_transaction FOREIGN KEY (transaction_id) REFERENCES transactions(transaction_id) ON DELETE SET NULL
+);
+
+INSERT INTO accounts (account_name, account_type) VALUES
+  ('Cash', 'cash'),
+  ('Accounts Receivable - Customers', 'AR'),
+  ('Delivery Revenue', 'revenue'),
+  ('Delivery Expense', 'expense');
 

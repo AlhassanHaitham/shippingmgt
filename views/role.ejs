@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="<%= lang %>" dir="<%= dir %>">
+<head>
+    <title>ShipFlow - Select Role</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+</head>
+<body class="bg-gray-100 min-h-screen flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl shadow-xl p-8 max-w-md w-full text-center">
+        <h1 class="text-2xl font-bold text-gray-900 mb-6">Who are you? / من أنت؟</h1>
+        <div class="grid gap-4">
+            <button onclick="setRole('admin')" class="flex items-center gap-4 p-4 rounded-xl border-2 border-gray-200 hover:border-blue-600 hover:bg-blue-50 transition-all group">
+                <i class="ph ph-shield-check text-3xl text-blue-600"></i>
+                <div class="text-start">
+                    <p class="font-bold text-gray-800 uppercase text-xs">Admin</p>
+                    <p class="text-sm text-gray-500">Logistics Employee</p>
+                </div>
+            </button>
+
+            <button onclick="setRole('merchant')" class="flex items-center gap-4 p-4 rounded-xl border-2 border-gray-200 hover:border-blue-600 hover:bg-blue-50 transition-all group">
+                <i class="ph ph-storefront text-3xl text-blue-600"></i>
+                <div class="text-start">
+                    <p class="font-bold text-gray-800 uppercase text-xs">Merchant</p>
+                    <p class="text-sm text-gray-500">Business Owner</p>
+                </div>
+            </button>
+
+            <button onclick="setRole('driver')" class="flex items-center gap-4 p-4 rounded-xl border-2 border-gray-200 hover:border-blue-600 hover:bg-blue-50 transition-all group">
+                <i class="ph ph-steering-wheel text-3xl text-blue-600"></i>
+                <div class="text-start">
+                    <p class="font-bold text-gray-800 uppercase text-xs">Driver</p>
+                    <p class="text-sm text-gray-500">Transport Partner</p>
+                </div>
+            </button>
+        </div>
+    </div>
+
+    <script>
+        function setRole(role) {
+            sessionStorage.setItem('user_role', role);
+            window.location.href = '/login';
+        }
+    </script>
+</body>
+</html>

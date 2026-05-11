@@ -1,26 +1,86 @@
-<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <title>My First Web Page</title>
-  </head>
-  <body>
-    <h1>Create Order</h1>
+<%- include('partials/header') %>
 
-    <form action="/orders/new" method="POST">
-      <input type="text" name="receiptnum" placeholder="Receipt Number" />
+<div class="max-w-3xl mx-auto mt-8 px-4 sm:px-6 lg:px-8">
+    
+    <div class="mb-8">
+        <h1 class="text-2xl font-bold text-gray-900 flex items-center gap-2">
+            <i class="ph ph-plus-circle text-blue-600"></i> <%= t.create_new_order %>
+        </h1>
+        <p class="mt-2 text-sm text-gray-500 font-medium"><%= t.step_1_title %></p>
+        
+        <div class="w-full bg-gray-200 rounded-full h-2.5 mt-4">
+            <div class="bg-blue-600 h-2.5 rounded-full" style="width: 25%"></div>
+        </div>
+    </div>
 
-      <input type="text" name="phone" placeholder="Phone" />
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 sm:p-8">
+        <form action="/orders/new" method="POST" class="space-y-6">
+            
+            <div>
+                <label for="receiptnum" class="block text-sm font-bold text-gray-700 mb-2"><%= t.receipt_num %></label>
+                <div class="relative">
+                    <div class="absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none text-gray-400">
+                        <i class="ph ph-receipt text-lg"></i>
+                    </div>
+                    <input type="text" id="receiptnum" name="receiptnum" placeholder="<%= t.receipt_placeholder %>" 
+                           class="block w-full rounded-xl border-gray-300 bg-gray-50 border focus:border-blue-500 focus:bg-white focus:ring-2 focus:ring-blue-200 text-gray-900 py-3 ps-10 pe-4 transition-all">
+                </div>
+            </div>
 
-      <input type="text" name="second_phone" placeholder="Second Phone" />
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <label for="phone" class="block text-sm font-bold text-gray-700 mb-2"><%= t.primary_phone %></label>
+                    <div class="relative">
+                        <div class="absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none text-gray-400">
+                            <i class="ph ph-phone text-lg"></i>
+                        </div>
+                        <input type="tel" id="phone" name="phone" placeholder="<%= t.phone_placeholder %>" required dir="ltr"
+                               class="block w-full rounded-xl border-gray-300 bg-gray-50 border focus:border-blue-500 focus:bg-white focus:ring-2 focus:ring-blue-200 text-gray-900 py-3 ps-10 pe-4 transition-all text-start">
+                    </div>
+                </div>
 
-      <input type="text" name="notes" placeholder="Notes" />
+                <div>
+                    <label for="second_phone" class="block text-sm font-bold text-gray-700 mb-2"><%= t.secondary_phone %></label>
+                    <div class="relative">
+                        <div class="absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none text-gray-400">
+                            <i class="ph ph-phone-plus text-lg"></i>
+                        </div>
+                        <input type="tel" id="second_phone" name="second_phone" placeholder="<%= t.phone_placeholder %>" dir="ltr"
+                               class="block w-full rounded-xl border-gray-300 bg-gray-50 border focus:border-blue-500 focus:bg-white focus:ring-2 focus:ring-blue-200 text-gray-900 py-3 ps-10 pe-4 transition-all text-start">
+                    </div>
+                </div>
+            </div>
 
-      <label for="retrieve">retrieve Item from customer</label>
+            <div class="bg-blue-50 border border-blue-100 rounded-xl p-4 flex items-start gap-3">
+                <div class="flex items-center h-6">
+                    <input id="retrieve" name="retrieve" type="checkbox" value="1" 
+                           class="w-5 h-5 text-blue-600 bg-white border-gray-300 rounded focus:ring-blue-500 focus:ring-2 cursor-pointer">
+                </div>
+                <div>
+                    <label for="retrieve" class="font-bold text-blue-900 cursor-pointer"><%= t.is_retrieve %></label>
+                    <p class="text-sm text-blue-700 mt-0.5"><%= t.retrieve_desc %></p>
+                </div>
+            </div>
 
-      <input type="checkbox" name="retrieve" />
+            <div>
+                <label for="notes" class="block text-sm font-bold text-gray-700 mb-2"><%= t.order_notes %></label>
+                <div class="relative">
+                    <div class="absolute top-3 start-0 flex items-start ps-3 pointer-events-none text-gray-400">
+                        <i class="ph ph-note-pencil text-lg"></i>
+                    </div>
+                    <textarea id="notes" name="notes" rows="3" placeholder="<%= t.notes_placeholder %>"
+                              class="block w-full rounded-xl border-gray-300 bg-gray-50 border focus:border-blue-500 focus:bg-white focus:ring-2 focus:ring-blue-200 text-gray-900 py-3 ps-10 pe-4 transition-all resize-none"></textarea>
+                </div>
+            </div>
 
-      <button type="submit">Next</button>
-    </form>
-  </body>
-</html>
+            <div class="pt-4 border-t border-gray-100 flex justify-end">
+                <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-xl shadow-md hover:shadow-lg transition-all flex items-center gap-2">
+                    <%= t.next_location %> <i class="ph ph-arrow-right rtl:hidden"></i><i class="ph ph-arrow-left hidden rtl:block"></i>
+                </button>
+            </div>
+
+        </form>
+    </div>
+</div>
+
+<%- include('partials/footer') %>
