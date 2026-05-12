@@ -62,7 +62,8 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // method-override: read _method from query string OR from form body
-// (browser <form> can't natively PUT/DELETE, so we use a hidden _method field)
+// (browser <form> can't natively PUT/DELETE, so
+//  use a hidden _method field)
 app.use(
   methodOverride(function (req) {
     if (req.body && typeof req.body === "object" && "_method" in req.body) {
@@ -99,10 +100,12 @@ app.use((req, res, next) => {
 });
 
 app.use((req, res, next) => {
-  const lang = (req.query.lang || req.cookies?.lang || "en").toString();
+  const sessionLang = req.session && req.session.lang;
+  const lang = (req.query.lang || sessionLang || "en").toString();
   const dict = translations[lang] || translations.en;
   res.locals.lang = translations[lang] ? lang : "en";
-  res.locals.dir = res.locals.lang === "ar" || res.locals.lang === "ku" ? "rtl" : "ltr";
+  res.locals.dir =
+    res.locals.lang === "ar" || res.locals.lang === "ku" ? "rtl" : "ltr";
   res.locals.t = dict;
   next();
 });
@@ -112,8 +115,30 @@ function requireAuth(req, res, next) {
   return res.redirect("/login");
 }
 
+// Language picker — shown before login on the first visit, and any time the
+// user clicks "Change Language" from the login screen.
+app.get("/language", (req, res) => {
+  res.render("language");
+});
+
+// Persists the chosen language on the session and bounces back. Safe-redirects
+// only to internal paths via return_to to avoid open-redirect.
+app.get("/set-lang/:lang", (req, res) => {
+  const lang = req.params.lang;
+  if (translations[lang]) {
+    req.session.lang = lang;
+  }
+  const rt = req.query.return_to;
+  if (typeof rt === "string" && rt.startsWith("/")) {
+    return res.redirect(rt);
+  }
+  if (req.session && req.session.user) return res.redirect("/");
+  return res.redirect("/login");
+});
+
 app.get("/login", (req, res) => {
   if (req.session.user) return res.redirect("/");
+  if (!req.session.lang) return res.redirect("/language");
   res.render("login", { error: null });
 });
 
@@ -137,9 +162,7 @@ app.post("/login", async (req, res) => {
     res.redirect("/");
   } catch (err) {
     console.error("login error:", err);
-    res
-      .status(500)
-      .render("login", { error: "Server error, try again" });
+    res.status(500).render("login", { error: "Server error, try again" });
   }
 });
 
@@ -369,9 +392,7 @@ app.post("/payments/new", requireAuth, async (req, res) => {
       return res.status(400).send("Invalid payment fields");
     }
     if (payment_type === "outgoing" && !partner_id) {
-      return res
-        .status(400)
-        .send("Outgoing payment requires partner_id");
+      return res.status(400).send("Outgoing payment requires partner_id");
     }
     await recordPayment({ amount, payment_type, partner_id, order_id, notes });
     res.redirect("/accounting");
@@ -545,9 +566,11 @@ app.post("/orders/:id/commissions", requireAuth, async (req, res) => {
       [orderID],
     );
     if (!order || !order.order_value || Number(order.order_value) <= 0) {
-      return res.status(400).send(
-        "This order has no order_value set. Go back to step 1 and enter the merchant's price.",
-      );
+      return res
+        .status(400)
+        .send(
+          "This order has no order_value set. Go back to step 1 and enter the merchant's price.",
+        );
     }
     const orderValue = Number(order.order_value);
     if (profit + driver_commission + company_commission > orderValue + 0.005) {
