@@ -340,14 +340,16 @@ export async function getPartners() {
   return await db.query(sql);
 }
 
-export async function createPartner(partner_name, partner_type) {
+export async function createPartner(partner_name, partner_type, default_commission = null) {
+  // default_commission only applies to drivers; the column has DEFAULT 5 so
+  // non-driver rows still get a valid value if we pass NULL.
   const sql = `
     INSERT INTO partners
-    (partner_name, partner_type)
-    VALUES (?, ?)
+    (partner_name, partner_type, default_commission)
+    VALUES (?, ?, COALESCE(?, 5))
   `;
 
-  return await db.query(sql, [partner_name, partner_type]);
+  return await db.query(sql, [partner_name, partner_type, default_commission]);
 }
 
 export async function deletePartnerByID(partner_id) {
@@ -385,18 +387,315 @@ export async function updatePartner(partner_id, partner_name, partner_type) {
 
 export async function getUserByUsername(username) {
   const [rows] = await db.query(
-    "SELECT user_id, username, password_hash, role FROM users WHERE username = ?",
+    "SELECT user_id, username, password_hash, role, partner_id FROM users WHERE username = ?",
     [username],
   );
   return rows[0] || null;
 }
 
-export async function createUser(username, password_hash, role) {
+export async function createUser(username, password_hash, role, partner_id = null) {
   const [result] = await db.query(
-    "INSERT IGNORE INTO users (username, password_hash, role) VALUES (?, ?, ?)",
-    [username, password_hash, role],
+    "INSERT IGNORE INTO users (username, password_hash, role, partner_id) VALUES (?, ?, ?, ?)",
+    [username, password_hash, role, partner_id],
   );
   return result;
+}
+
+// Idempotent schema bootstrap. Applies the driver-portal additions on top of a
+// database created from the original database.sql. Catches "already exists"
+// errors so a second boot is a no-op.
+const IGNORABLE_MIGRATION_CODES = new Set([
+  "ER_DUP_FIELDNAME",   // column already exists
+  "ER_TABLE_EXISTS_ERROR",
+  "ER_DUP_KEYNAME",
+  "ER_FK_DUP_NAME",
+  "ER_CANT_CREATE_TABLE", // FK already exists
+]);
+
+async function runStep(sql) {
+  try {
+    await db.query(sql);
+  } catch (err) {
+    if (IGNORABLE_MIGRATION_CODES.has(err.code)) return;
+    if (err.code === "ER_DUP_FIELDNAME" || /Duplicate (column|key)/i.test(err.message)) return;
+    throw err;
+  }
+}
+
+export async function runMigrations() {
+  await runStep(`ALTER TABLE users ADD COLUMN partner_id INT NULL`);
+  await runStep(
+    `ALTER TABLE users ADD CONSTRAINT fk_users_partner
+     FOREIGN KEY (partner_id) REFERENCES partners(partner_id)`,
+  );
+  await runStep(
+    `ALTER TABLE partners ADD COLUMN availability
+     ENUM('available','not_available') NOT NULL DEFAULT 'available'`,
+  );
+  // Per-driver flat commission. Used when a driver gets assigned to an order
+  // and the order's driver_commission hasn't been set yet.
+  await runStep(
+    `ALTER TABLE partners ADD COLUMN default_commission DECIMAL(12,2) NOT NULL DEFAULT 5`,
+  );
+  // Distinguishes who cancelled an order, surfaced as a bucket on the driver
+  // portal. NULL for non-cancelled orders.
+  await runStep(
+    `ALTER TABLE orders ADD COLUMN cancelled_by ENUM('driver','customer') NULL`,
+  );
+  await runStep(`
+    CREATE TABLE road_reports (
+      report_id INT AUTO_INCREMENT PRIMARY KEY,
+      partner_id INT NOT NULL,
+      report_type ENUM('traffic','checkpoint','weather','accident') NOT NULL,
+      location VARCHAR(120),
+      details VARCHAR(500),
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      CONSTRAINT fk_report_partner FOREIGN KEY (partner_id) REFERENCES partners(partner_id)
+    )
+  `);
+  await runStep(`
+    CREATE TABLE legal_clearances (
+      clearance_id INT AUTO_INCREMENT PRIMARY KEY,
+      partner_id INT NOT NULL,
+      checkpoint VARCHAR(80),
+      manifest_code VARCHAR(80),
+      status ENUM('pending','approved','rejected') NOT NULL DEFAULT 'pending',
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      CONSTRAINT fk_clearance_partner FOREIGN KEY (partner_id) REFERENCES partners(partner_id)
+    )
+  `);
+}
+
+// ─── driver portal helpers ──────────────────────────────────────────────
+
+export async function getDriverInfo(partnerID) {
+  const [[row]] = await db.query(
+    "SELECT partner_id, partner_name, availability FROM partners WHERE partner_id = ?",
+    [partnerID],
+  );
+  return row || null;
+}
+
+export async function setDriverAvailability(partnerID, availability) {
+  if (availability !== "available" && availability !== "not_available") {
+    throw new Error(`invalid availability: ${availability}`);
+  }
+  await db.query(
+    "UPDATE partners SET availability = ? WHERE partner_id = ?",
+    [availability, partnerID],
+  );
+}
+
+export async function getDriverOrders(partnerID) {
+  const [rows] = await db.query(
+    `SELECT o.order_id, o.receiptnum, o.phone, o.notes, o.order_value, o.status,
+            o.cancelled_by,
+            m.partner_name AS merchant_name
+       FROM orders o
+       LEFT JOIN partners m ON o.merchant_partner_id = m.partner_id
+       WHERE o.assigned_driver_id = ?
+       ORDER BY
+         CASE o.status WHEN 'Pending' THEN 0 ELSE 1 END,
+         o.order_id DESC`,
+    [partnerID],
+  );
+  return rows;
+}
+
+// Three filtered views used by the driver portal checklists.
+export async function getDriverOrdersByBucket(partnerID, bucket) {
+  let where;
+  if (bucket === "pending") {
+    where = "o.status = 'Pending'";
+  } else if (bucket === "delivered") {
+    where = "o.status = 'Delivered'";
+  } else if (bucket === "cancelled_by_driver") {
+    where = "o.status = 'Cancelled' AND o.cancelled_by = 'driver'";
+  } else if (bucket === "cancelled_by_customer") {
+    where = "o.status = 'Cancelled' AND o.cancelled_by = 'customer'";
+  } else {
+    throw new Error(`Unknown bucket: ${bucket}`);
+  }
+  const [rows] = await db.query(
+    `SELECT o.order_id, o.receiptnum, o.phone, o.notes, o.order_value, o.status,
+            o.cancelled_by,
+            m.partner_name AS merchant_name
+       FROM orders o
+       LEFT JOIN partners m ON o.merchant_partner_id = m.partner_id
+       WHERE o.assigned_driver_id = ? AND ${where}
+       ORDER BY o.order_id DESC`,
+    [partnerID],
+  );
+  return rows;
+}
+
+// Verifies the order is assigned to the given driver, then updates status
+// (+ cancelled_by where applicable) through updateOrderStatus so ledger
+// side-effects fire. Throws if the order isn't theirs.
+export async function driverChangeOrderStatus(partnerID, orderID, newStatus, cancelledBy = null) {
+  const [[row]] = await db.query(
+    "SELECT assigned_driver_id FROM orders WHERE order_id = ?",
+    [orderID],
+  );
+  if (!row) throw new Error(`Order #${orderID} not found`);
+  if (Number(row.assigned_driver_id) !== Number(partnerID)) {
+    throw new Error(`Order #${orderID} is not assigned to you`);
+  }
+  await updateOrderStatus(orderID, newStatus);
+  // cancelled_by is meaningful only for cancellations; clear it otherwise so
+  // a re-delivered order doesn't keep stale "cancelled by" data.
+  if (newStatus === "Cancelled") {
+    if (cancelledBy !== "driver" && cancelledBy !== "customer") {
+      throw new Error("cancelledBy must be 'driver' or 'customer'");
+    }
+    await db.query(
+      "UPDATE orders SET cancelled_by = ? WHERE order_id = ?",
+      [cancelledBy, orderID],
+    );
+  } else {
+    await db.query(
+      "UPDATE orders SET cancelled_by = NULL WHERE order_id = ?",
+      [orderID],
+    );
+  }
+}
+
+export async function createRoadReport({ partner_id, report_type, location, details }) {
+  const [result] = await db.query(
+    `INSERT INTO road_reports (partner_id, report_type, location, details)
+     VALUES (?, ?, ?, ?)`,
+    [partner_id, report_type, location || null, details || null],
+  );
+  return result.insertId;
+}
+
+export async function getDriverReports(partnerID, limit = 10) {
+  const [rows] = await db.query(
+    `SELECT report_id, report_type, location, details, created_at
+       FROM road_reports
+       WHERE partner_id = ?
+       ORDER BY created_at DESC
+       LIMIT ?`,
+    [partnerID, limit],
+  );
+  return rows;
+}
+
+export async function createLegalClearance({ partner_id, checkpoint, manifest_code }) {
+  const [result] = await db.query(
+    `INSERT INTO legal_clearances (partner_id, checkpoint, manifest_code)
+     VALUES (?, ?, ?)`,
+    [partner_id, checkpoint || null, manifest_code || null],
+  );
+  return result.insertId;
+}
+
+export async function getDriverClearances(partnerID, limit = 10) {
+  const [rows] = await db.query(
+    `SELECT clearance_id, checkpoint, manifest_code, status, created_at
+       FROM legal_clearances
+       WHERE partner_id = ?
+       ORDER BY created_at DESC
+       LIMIT ?`,
+    [partnerID, limit],
+  );
+  return rows;
+}
+
+// ─── default "Headquarters" + "Owner" used to auto-fill new orders ─────
+
+const DEFAULT_HQ_NAME = "Headquarters (parent company)";
+const DEFAULT_OWNER_NAME = "Owner";
+
+export async function ensureDefaults() {
+  // Owner merchant — uses 'supplier' since the existing allPartners() query
+  // already treats supplier rows as merchants.
+  const [ownerMatches] = await db.query(
+    "SELECT partner_id FROM partners WHERE partner_name = ? LIMIT 1",
+    [DEFAULT_OWNER_NAME],
+  );
+  let ownerPartnerID;
+  if (ownerMatches.length > 0) {
+    ownerPartnerID = ownerMatches[0].partner_id;
+  } else {
+    const [ins] = await db.query(
+      "INSERT INTO partners (partner_name, partner_type) VALUES (?, 'supplier')",
+      [DEFAULT_OWNER_NAME],
+    );
+    ownerPartnerID = ins.insertId;
+  }
+
+  // HQ location — type='company' so it's distinguishable.
+  const [hqMatches] = await db.query(
+    "SELECT location_id FROM inventory_locations WHERE location_name = ? LIMIT 1",
+    [DEFAULT_HQ_NAME],
+  );
+  let hqLocationID;
+  if (hqMatches.length > 0) {
+    hqLocationID = hqMatches[0].location_id;
+  } else {
+    const [ins] = await db.query(
+      "INSERT INTO inventory_locations (location_name, type, partner_id) VALUES (?, 'company', ?)",
+      [DEFAULT_HQ_NAME, ownerPartnerID],
+    );
+    hqLocationID = ins.insertId;
+  }
+
+  return { ownerPartnerID, hqLocationID, ownerName: DEFAULT_OWNER_NAME, hqName: DEFAULT_HQ_NAME };
+}
+
+// ─── bulk-assign helpers (called from the /orders page) ───────────────
+
+export async function bulkAssignShipment(orderIDs, shipmentID) {
+  if (!Array.isArray(orderIDs) || orderIDs.length === 0) {
+    throw new Error("orderIDs must be a non-empty array");
+  }
+  const sid = shipmentID === "" || shipmentID == null ? null : Number(shipmentID);
+  await db.query(
+    "UPDATE orders SET shipment_id = ? WHERE order_id IN (?)",
+    [sid, orderIDs.map(Number)],
+  );
+}
+
+export async function bulkAssignDriver(orderIDs, driverPartnerID) {
+  if (!Array.isArray(orderIDs) || orderIDs.length === 0) {
+    throw new Error("orderIDs must be a non-empty array");
+  }
+  const did = driverPartnerID === "" || driverPartnerID == null ? null : Number(driverPartnerID);
+  // Unassigning leaves driver_commission alone.
+  if (did === null) {
+    await db.query(
+      "UPDATE orders SET assigned_driver_id = NULL WHERE order_id IN (?)",
+      [orderIDs.map(Number)],
+    );
+    return;
+  }
+  // Assigning a driver also copies that driver's default_commission into
+  // any order where driver_commission hasn't been set yet (0 or NULL).
+  // Existing non-zero commissions are preserved.
+  const defaultComm = await getDriverDefaultCommission(did);
+  await db.query(
+    `UPDATE orders
+        SET assigned_driver_id = ?,
+            driver_commission = CASE
+              WHEN driver_commission IS NULL OR driver_commission = 0 THEN ?
+              ELSE driver_commission
+            END
+      WHERE order_id IN (?)`,
+    [did, defaultComm, orderIDs.map(Number)],
+  );
+}
+
+// Fetch a driver's default_commission, falling back to 5 if the partner row
+// is missing or the column hasn't been backfilled.
+export async function getDriverDefaultCommission(driverPartnerID) {
+  if (!driverPartnerID) return 5;
+  const [[row]] = await db.query(
+    "SELECT default_commission FROM partners WHERE partner_id = ?",
+    [driverPartnerID],
+  );
+  const val = row && row.default_commission;
+  return val == null ? 5 : Number(val);
 }
 
 // dashboards / listings — joined views for EJS pages
@@ -451,11 +750,12 @@ export async function getDriversData() {
     SELECT
       p.partner_id AS id,
       COALESCE(p.partner_name, CONCAT('Partner #', p.partner_id)) AS name,
+      p.default_commission,
       COUNT(o.order_id) AS total_orders
     FROM partners p
     LEFT JOIN orders o ON p.partner_id = o.assigned_driver_id
     WHERE p.partner_type = 'driver'
-    GROUP BY p.partner_id, p.partner_name
+    GROUP BY p.partner_id, p.partner_name, p.default_commission
     ORDER BY name
   `);
   return rows;

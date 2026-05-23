@@ -167,3 +167,29 @@ INSERT INTO accounts (account_name, account_type) VALUES
   ('Delivery Revenue', 'revenue'),
   ('Delivery Expense', 'expense');
 
+-- driver portal additions
+ALTER TABLE users ADD COLUMN partner_id INT NULL,
+  ADD CONSTRAINT fk_users_partner FOREIGN KEY (partner_id) REFERENCES partners(partner_id);
+
+ALTER TABLE partners ADD COLUMN availability ENUM('available','not_available') NOT NULL DEFAULT 'available';
+
+CREATE TABLE road_reports (
+  report_id INT AUTO_INCREMENT PRIMARY KEY,
+  partner_id INT NOT NULL,
+  report_type ENUM('traffic','checkpoint','weather','accident') NOT NULL,
+  location VARCHAR(120),
+  details VARCHAR(500),
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT fk_report_partner FOREIGN KEY (partner_id) REFERENCES partners(partner_id)
+);
+
+CREATE TABLE legal_clearances (
+  clearance_id INT AUTO_INCREMENT PRIMARY KEY,
+  partner_id INT NOT NULL,
+  checkpoint VARCHAR(80),
+  manifest_code VARCHAR(80),
+  status ENUM('pending','approved','rejected') NOT NULL DEFAULT 'pending',
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT fk_clearance_partner FOREIGN KEY (partner_id) REFERENCES partners(partner_id)
+);
+

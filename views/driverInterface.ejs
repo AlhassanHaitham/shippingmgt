@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="<%= lang %>" dir="<%= dir %>">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ShipFlow - Modern Logistics Solution</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+  </head>
+  <body class="bg-white text-gray-900 font-sans">
+    <nav
+      class="fixed top-0 w-full bg-white/80 backdrop-blur-md z-50 border-b border-gray-100"
+    >
+      <div
+        class="max-w-7xl mx-auto px-6 h-20 flex justify-between items-center"
+      >
+        <div class="flex items-center gap-2 text-blue-700">
+          <i class="ph ph-truck text-4xl"></i>
+          <span class="font-bold text-2xl tracking-tight">ShipFlow</span>
+        </div>
+
+        <div class="flex items-center gap-4">
+          <div class="relative group">
+            <button
+              class="flex items-center gap-2 px-3 py-2 rounded-lg border border-gray-200 hover:bg-gray-50 text-sm font-bold"
+            >
+              <i class="ph ph-globe text-xl"></i> <%= lang.toUpperCase() %>
+            </button>
+            <div
+              class="absolute right-0 mt-2 w-32 bg-white rounded-xl shadow-xl hidden group-hover:block border border-gray-100 overflow-hidden"
+            >
+              <a
+                href="/set-lang/en"
+                class="block px-4 py-2 hover:bg-blue-50 text-sm"
+                >English</a
+              >
+              <a
+                href="/set-lang/ar"
+                class="block px-4 py-2 hover:bg-blue-50 text-sm"
+                >العربية</a
+              >
+              <a
+                href="/set-lang/ku"
+                class="block px-4 py-2 hover:bg-blue-50 text-sm"
+                >کوردی</a
+              >
+            </div>
+          </div>
+          <a
+            href="/login"
+            class="bg-blue-600 text-white px-5 py-2.5 rounded-xl font-bold text-sm hover:bg-blue-700 transition-all"
+          >
+            <%= t.login || 'Sign In' %>
+          </a>
+        </div>
+      </div>
+    </nav>
+
+    <header class="pt-40 pb-20 px-6">
+      <div class="max-w-5xl mx-auto text-center space-y-8">
+        <h1 class="text-5xl md:text-7xl font-black text-gray-900 leading-tight">
+          Logistics Management <br /><span class="text-blue-600"
+            >Reimagined for Iraq.</span
+          >
+        </h1>
+        <p class="text-xl text-gray-600 max-w-2xl mx-auto">
+          The all-in-one platform connecting Merchants, Drivers, and Admins.
+          Streamline your shipments across every province.
+        </p>
+        <div class="flex flex-wrap justify-center gap-4">
+          <a
+            href="/request-account"
+            class="px-8 py-4 bg-gray-900 text-white rounded-2xl font-bold hover:scale-105 transition-transform flex items-center gap-2"
+          >
+            <i class="ph ph-user-plus text-xl"></i> Request an Account
+          </a>
+          <a
+            href="#features"
+            class="px-8 py-4 bg-gray-100 text-gray-700 rounded-2xl font-bold hover:bg-gray-200 transition-all"
+          >
+            Explore Features
+          </a>
+        </div>
+      </div>
+    </header>
+
+    <section id="features" class="py-20 bg-gray-50 px-6">
+      <div class="max-w-7xl mx-auto">
+        <div class="grid md:grid-cols-3 gap-8">
+          <div
+            class="bg-white p-8 rounded-3xl shadow-sm border border-gray-100"
+          >
+            <div
+              class="w-14 h-14 bg-blue-100 text-blue-600 rounded-2xl flex items-center justify-center mb-6"
+            >
+              <i class="ph ph-shield-check text-3xl"></i>
+            </div>
+            <h3 class="text-xl font-bold mb-3">Enterprise Control</h3>
+            <p class="text-gray-500 leading-relaxed">
+              Full oversight for delivery companies. Manage orders, partners,
+              and company-wide accounting in one dashboard.
+            </p>
+          </div>
+
+          <div
+            class="bg-white p-8 rounded-3xl shadow-sm border border-gray-100"
+          >
+            <div
+              class="w-14 h-14 bg-green-100 text-green-600 rounded-2xl flex items-center justify-center mb-6"
+            >
+              <i class="ph ph-storefront text-3xl"></i>
+            </div>
+            <h3 class="text-xl font-bold mb-3">Merchant Portal</h3>
+            <p class="text-gray-500 leading-relaxed">
+              Merchants can track their own shipments, view balances, and manage
+              commissions without seeing internal company data.
+            </p>
+          </div>
+
+          <div
+            class="bg-white p-8 rounded-3xl shadow-sm border border-gray-100"
+          >
+            <div
+              class="w-14 h-14 bg-orange-100 text-orange-600 rounded-2xl flex items-center justify-center mb-6"
+            >
+              <i class="ph ph-steering-wheel text-3xl"></i>
+            </div>
+            <h3 class="text-xl font-bold mb-3">Driver Network</h3>
+            <p class="text-gray-500 leading-relaxed">
+              Real-time road reporting for traffic, checkpoints, and weather
+              updates across Iraq and the KRG region.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <footer
+      class="py-12 border-t border-gray-100 text-center text-gray-400 text-sm"
+    >
+      <p>&copy; 2024 ShipFlow Logistics System. All rights reserved.</p>
+    </footer>
+  </body>
+</html>

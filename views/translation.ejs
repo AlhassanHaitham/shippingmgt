@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="<%= lang %>" dir="<%= dir %>">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Driver Command Center - ShipFlow</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <style>
+      .toggle-checkbox:checked {
+        right: 0;
+        border-color: #22c55e;
+      }
+      .toggle-checkbox:checked + .toggle-label {
+        background-color: #22c55e;
+      }
+      .toggle-checkbox {
+        right: 0;
+        z-index: 1;
+        border-color: #e5e7eb;
+        transition: all 0.3s;
+      }
+      .toggle-label {
+        width: 3rem;
+        height: 1.5rem;
+        background-color: #e5e7eb;
+        transition: all 0.3s;
+      }
+    </style>
+  </head>
+  <body class="bg-gray-100 min-h-screen font-sans text-gray-900 pb-12">
+    <nav class="bg-gray-900 text-white shadow-md">
+      <div
+        class="max-w-7xl mx-auto px-4 h-16 flex justify-between items-center"
+      >
+        <div class="flex items-center gap-2">
+          <i class="ph ph-steering-wheel text-3xl text-orange-400"></i>
+          <span class="font-bold text-xl tracking-tight"><%= t.driver_portal || 'Driver Portal' %></span>
+        </div>
+        <div class="flex items-center gap-4">
+          <div class="hidden sm:flex items-center gap-2 text-sm text-gray-300">
+            <i class="ph ph-user-circle text-lg"></i>
+            <span><%= driver.partner_name %></span>
+          </div>
+          <div class="relative group">
+            <button
+              class="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-gray-700 hover:bg-gray-800 text-sm font-bold"
+            >
+              <i class="ph ph-globe"></i> <%= lang.toUpperCase() %>
+            </button>
+            <div
+              class="absolute right-0 mt-2 w-32 bg-white text-gray-900 rounded-xl shadow-xl hidden group-hover:block border border-gray-100 overflow-hidden z-50"
+            >
+              <a href="/set-lang/en?return_to=/driver" class="block px-4 py-2 hover:bg-blue-50 text-sm">English</a>
+              <a href="/set-lang/ar?return_to=/driver" class="block px-4 py-2 hover:bg-blue-50 text-sm">العربية</a>
+              <a href="/set-lang/ku?return_to=/driver" class="block px-4 py-2 hover:bg-blue-50 text-sm">کوردی</a>
+            </div>
+          </div>
+          <form action="/logout" method="POST" class="m-0">
+            <button type="submit" class="text-gray-300 hover:text-white flex items-center gap-1 text-sm">
+              <i class="ph ph-sign-out text-xl"></i> <%= t.logout || 'Logout' %>
+            </button>
+          </form>
+        </div>
+      </div>
+    </nav>
+
+    <main class="max-w-4xl mx-auto px-4 mt-8 space-y-6">
+      <div
+        class="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4"
+      >
+        <div>
+          <h1 class="text-2xl font-black text-gray-900"><%= t.driver_welcome || 'Welcome, Driver' %></h1>
+          <p class="text-gray-500 text-sm mt-1"><%= t.driver_subtitle || 'Manage your route, status, and reports here.' %></p>
+        </div>
+
+        <div
+          class="flex items-center gap-3 bg-gray-50 px-4 py-3 rounded-xl border border-gray-200"
+        >
+          <span class="font-bold text-gray-700 text-sm"><%= t.next_delivery_status || 'Next Delivery Status:' %></span>
+          <div
+            class="relative inline-block w-12 mr-2 align-middle select-none transition duration-200 ease-in"
+          >
+            <input
+              type="checkbox"
+              name="toggle"
+              id="statusToggle"
+              class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer"
+              <%= driver.availability === 'available' ? 'checked' : '' %>
+            />
+            <label
+              for="statusToggle"
+              class="toggle-label block overflow-hidden h-6 rounded-full bg-gray-300 cursor-pointer"
+            ></label>
+          </div>
+          <span id="statusText" class="font-bold <%= driver.availability === 'available' ? 'text-green-600' : 'text-red-600' %> text-sm">
+            <%= driver.availability === 'available' ? (t.available || 'Available') : (t.not_available || 'Not Available') %>
+          </span>
+        </div>
+      </div>
+
+      <!-- Pending assigned orders — actionable -->
+      <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
+        <div class="flex items-center gap-2 text-blue-700 mb-4">
+          <i class="ph ph-package text-2xl"></i>
+          <h2 class="text-lg font-bold text-gray-900"><%= t.pending_assigned_orders || 'Pending Assigned Orders' %></h2>
+          <span class="ml-auto text-xs font-semibold text-gray-500 bg-gray-100 px-2 py-1 rounded-full"><%= pending.length %></span>
+        </div>
+        <% if (pending.length === 0) { %>
+          <p class="text-sm text-gray-500"><%= t.no_pending_orders || 'No pending orders right now.' %></p>
+        <% } else { %>
+          <div class="overflow-x-auto">
+            <table class="min-w-full text-sm">
+              <thead class="bg-gray-50 text-gray-500 uppercase text-xs">
+                <tr>
+                  <th class="px-3 py-2 text-start">#</th>
+                  <th class="px-3 py-2 text-start"><%= t.receipt_no || 'Receipt' %></th>
+                  <th class="px-3 py-2 text-start"><%= t.customer_phone || 'Phone' %></th>
+                  <th class="px-3 py-2 text-start"><%= t.merchant || 'Merchant' %></th>
+                  <th class="px-3 py-2 text-end"><%= t.actions || 'Actions' %></th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-gray-100">
+                <% pending.forEach(function(o) { %>
+                  <tr>
+                    <td class="px-3 py-2 font-semibold text-blue-700">ORD-<%= o.order_id %></td>
+                    <td class="px-3 py-2"><%= o.receiptnum || (t.n_a || 'N/A') %></td>
+                    <td class="px-3 py-2" dir="ltr"><%= o.phone || '' %></td>
+                    <td class="px-3 py-2"><%= o.merchant_name || (t.unassigned || 'Unassigned') %></td>
+                    <td class="px-3 py-2">
+                      <div class="flex flex-wrap items-center justify-end gap-1.5">
+                        <form action="/driver/orders/<%= o.order_id %>/deliver" method="POST" class="m-0">
+                          <button type="submit" class="bg-green-600 hover:bg-green-700 text-white text-xs font-bold px-2.5 py-1.5 rounded-lg flex items-center gap-1">
+                            <i class="ph ph-check"></i> <%= t.mark_delivered || 'Delivered' %>
+                          </button>
+                        </form>
+                        <form action="/driver/orders/<%= o.order_id %>/cancel-mine" method="POST" class="m-0" onsubmit="return confirm('<%= t.confirm_cancel_mine || 'Cancel this order on your end?' %>');">
+                          <button type="submit" class="bg-red-600 hover:bg-red-700 text-white text-xs font-bold px-2.5 py-1.5 rounded-lg flex items-center gap-1">
+                            <i class="ph ph-x-circle"></i> <%= t.cancel_by_me || 'Cancel (me)' %>
+                          </button>
+                        </form>
+                        <form action="/driver/orders/<%= o.order_id %>/cancel-customer" method="POST" class="m-0" onsubmit="return confirm('<%= t.confirm_cancel_customer || 'Mark as cancelled by customer?' %>');">
+                          <button type="submit" class="bg-orange-500 hover:bg-orange-600 text-white text-xs font-bold px-2.5 py-1.5 rounded-lg flex items-center gap-1">
+                            <i class="ph ph-user-minus"></i> <%= t.cancel_by_customer || 'Cancel (customer)' %>
+                          </button>
+                        </form>
+                      </div>
+                    </td>
+                  </tr>
+                <% }); %>
+              </tbody>
+            </table>
+          </div>
+        <% } %>
+      </div>
+
+      <!-- Completed checklists -->
+      <%
+        const buckets = [
+          { label: t.delivered_orders || 'Delivered', icon: 'ph-check-circle', color: 'green', items: delivered },
+          { label: t.cancelled_by_me || 'Cancelled by me', icon: 'ph-x-circle', color: 'red', items: cancelledByMe },
+          { label: t.cancelled_by_customer_orders || 'Cancelled by customer', icon: 'ph-user-minus', color: 'orange', items: cancelledByCustomer },
+        ];
+      %>
+      <div class="grid md:grid-cols-3 gap-4">
+        <% buckets.forEach(function(b) { %>
+          <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-5">
+            <div class="flex items-center gap-2 mb-3 text-<%= b.color %>-700">
+              <i class="ph <%= b.icon %> text-2xl"></i>
+              <h3 class="text-sm font-bold text-gray-900"><%= b.label %></h3>
+              <span class="ml-auto text-xs font-semibold text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full"><%= b.items.length %></span>
+            </div>
+            <% if (b.items.length === 0) { %>
+              <p class="text-xs text-gray-400 italic"><%= t.nothing_here_yet || 'Nothing here yet.' %></p>
+            <% } else { %>
+              <ul class="space-y-2 max-h-72 overflow-y-auto">
+                <% b.items.forEach(function(o) { %>
+                  <li class="flex items-start gap-2 text-xs">
+                    <i class="ph ph-check-square text-<%= b.color %>-500 mt-0.5"></i>
+                    <div class="flex-1 min-w-0">
+                      <div class="font-semibold text-gray-900">ORD-<%= o.order_id %></div>
+                      <div class="text-gray-500 truncate">
+                        <%= o.merchant_name || '—' %>
+                        <% if (o.receiptnum) { %> · <span dir="ltr">#<%= o.receiptnum %></span><% } %>
+                      </div>
+                    </div>
+                  </li>
+                <% }); %>
+              </ul>
+            <% } %>
+          </div>
+        <% }); %>
+      </div>
+
+      <div class="grid md:grid-cols-2 gap-6">
+        <!-- Legal clearance -->
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
+          <div class="flex items-center gap-2 text-blue-700 mb-4">
+            <i class="ph ph-file-text text-2xl"></i>
+            <h2 class="text-lg font-bold text-gray-900"><%= t.legal_docs_title || 'Pre-Clearance Legal Docs' %></h2>
+          </div>
+          <p class="text-sm text-gray-500 mb-6"><%= t.legal_docs_desc || 'Submit your manifest and legal approvals to authorities before arriving at the checkpoint.' %></p>
+
+          <form action="/driver/clearance" method="POST" class="space-y-4">
+            <div>
+              <label class="block text-sm font-bold text-gray-700 mb-1"><%= t.target_checkpoint || 'Target Checkpoint' %></label>
+              <select
+                name="checkpoint"
+                class="w-full border-gray-300 rounded-xl bg-gray-50 p-3 border focus:border-blue-500 focus:ring-0 outline-none"
+              >
+                <option>Baghdad South Gate</option>
+                <option>Erbil Main Checkpoint</option>
+                <option>Basra Highway Control</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-sm font-bold text-gray-700 mb-1"><%= t.manifest_code || 'Manifest / Clearance Code' %></label>
+              <input
+                type="text"
+                name="manifest_code"
+                placeholder="e.g. CLR-99283-IRQ"
+                class="w-full border-gray-300 rounded-xl bg-gray-50 p-3 border focus:border-blue-500 outline-none"
+              />
+            </div>
+            <button
+              type="submit"
+              class="w-full bg-blue-600 text-white font-bold py-3 rounded-xl hover:bg-blue-700 transition-colors flex justify-center items-center gap-2"
+            >
+              <i class="ph ph-paper-plane-right"></i> <%= t.submit_clearance || 'Submit Clearance' %>
+            </button>
+          </form>
+
+          <% if (clearances.length > 0) { %>
+            <div class="mt-6 border-t border-gray-100 pt-4">
+              <p class="text-xs font-bold text-gray-500 uppercase mb-2">Recent submissions</p>
+              <ul class="space-y-1 text-xs text-gray-700">
+                <% clearances.forEach(function(c) { %>
+                  <li class="flex justify-between">
+                    <span><%= c.checkpoint || '—' %> · <%= c.manifest_code || '' %></span>
+                    <span class="text-gray-400"><%= c.status %></span>
+                  </li>
+                <% }); %>
+              </ul>
+            </div>
+          <% } %>
+        </div>
+
+        <!-- Road report -->
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
+          <div class="flex items-center gap-2 text-orange-600 mb-4">
+            <i class="ph ph-warning-circle text-2xl"></i>
+            <h2 class="text-lg font-bold text-gray-900"><%= t.road_reporting_title || 'Live Road Reporting' %></h2>
+          </div>
+          <p class="text-sm text-gray-500 mb-6"><%= t.road_reporting_desc || 'Alert the network about road conditions, traffic, or sudden delays.' %></p>
+
+          <form action="/driver/reports" method="POST" class="space-y-4">
+            <div>
+              <label class="block text-sm font-bold text-gray-700 mb-1"><%= t.report_type || 'Report Type' %></label>
+              <div class="grid grid-cols-2 gap-2">
+                <label class="flex items-center gap-2 p-2 border rounded-lg cursor-pointer hover:bg-orange-50">
+                  <input type="radio" name="report_type" value="traffic" class="text-orange-500 focus:ring-orange-500" checked />
+                  <span class="text-sm font-medium"><%= t.traffic_jam || 'Traffic Jam' %></span>
+                </label>
+                <label class="flex items-center gap-2 p-2 border rounded-lg cursor-pointer hover:bg-orange-50">
+                  <input type="radio" name="report_type" value="checkpoint" class="text-orange-500 focus:ring-orange-500" />
+                  <span class="text-sm font-medium"><%= t.checkpoint_delay || 'Checkpoint Delay' %></span>
+                </label>
+                <label class="flex items-center gap-2 p-2 border rounded-lg cursor-pointer hover:bg-orange-50">
+                  <input type="radio" name="report_type" value="weather" class="text-orange-500 focus:ring-orange-500" />
+                  <span class="text-sm font-medium"><%= t.bad_weather || 'Bad Weather' %></span>
+                </label>
+                <label class="flex items-center gap-2 p-2 border rounded-lg cursor-pointer hover:bg-orange-50">
+                  <input type="radio" name="report_type" value="accident" class="text-orange-500 focus:ring-orange-500" />
+                  <span class="text-sm font-medium"><%= t.accident || 'Accident' %></span>
+                </label>
+              </div>
+            </div>
+            <div>
+              <label class="block text-sm font-bold text-gray-700 mb-1"><%= t.location_highway || 'Location / Highway' %></label>
+              <div class="relative">
+                <i class="ph ph-map-pin absolute left-3 top-3.5 text-gray-400"></i>
+                <input
+                  type="text"
+                  name="location"
+                  placeholder="e.g. Route 1, near Hillah"
+                  class="w-full pl-10 border-gray-300 rounded-xl bg-gray-50 p-3 border focus:border-orange-500 outline-none"
+                />
+              </div>
+            </div>
+            <div>
+              <label class="block text-sm font-bold text-gray-700 mb-1"><%= t.details || 'Details' %></label>
+              <textarea
+                rows="2"
+                name="details"
+                placeholder="Briefly describe the situation..."
+                class="w-full border-gray-300 rounded-xl bg-gray-50 p-3 border focus:border-orange-500 outline-none"
+              ></textarea>
+            </div>
+            <button
+              type="submit"
+              class="w-full bg-orange-500 text-white font-bold py-3 rounded-xl hover:bg-orange-600 transition-colors flex justify-center items-center gap-2"
+            >
+              <i class="ph ph-broadcast"></i> <%= t.broadcast_report || 'Broadcast Report' %>
+            </button>
+          </form>
+
+          <% if (reports.length > 0) { %>
+            <div class="mt-6 border-t border-gray-100 pt-4">
+              <p class="text-xs font-bold text-gray-500 uppercase mb-2">Recent reports</p>
+              <ul class="space-y-1 text-xs text-gray-700">
+                <% reports.forEach(function(r) { %>
+                  <li class="flex justify-between gap-2">
+                    <span class="font-semibold capitalize"><%= r.report_type %></span>
+                    <span class="text-gray-500 truncate"><%= r.location || '—' %></span>
+                  </li>
+                <% }); %>
+              </ul>
+            </div>
+          <% } %>
+        </div>
+      </div>
+    </main>
+
+    <script>
+      const statusToggle = document.getElementById("statusToggle");
+      const statusText = document.getElementById("statusText");
+
+      statusToggle.addEventListener("change", async function () {
+        const desired = this.checked ? "available" : "not_available";
+        // Optimistic UI
+        if (this.checked) {
+          statusText.textContent = "<%= t.available || 'Available' %>";
+          statusText.className = "font-bold text-green-600 text-sm";
+        } else {
+          statusText.textContent = "<%= t.not_available || 'Not Available' %>";
+          statusText.className = "font-bold text-red-600 text-sm";
+        }
+        try {
+          const res = await fetch("/driver/status", {
+            method: "POST",
+            headers: { "Content-Type": "application/x-www-form-urlencoded" },
+            body: "availability=" + encodeURIComponent(desired),
+          });
+          if (!res.ok) throw new Error("Failed to update status");
+        } catch (err) {
+          // Revert on error
+          this.checked = !this.checked;
+          if (this.checked) {
+            statusText.textContent = "<%= t.available || 'Available' %>";
+            statusText.className = "font-bold text-green-600 text-sm";
+          } else {
+            statusText.textContent = "<%= t.not_available || 'Not Available' %>";
+            statusText.className = "font-bold text-red-600 text-sm";
+          }
+          alert("Could not update status. Please try again.");
+        }
+      });
+    </script>
+  </body>
+</html>

@@ -26,6 +26,7 @@
                     <tr>
                         <th class="px-6 py-3 text-start text-xs font-bold text-gray-500 uppercase tracking-wider"><%= t.driver_details %></th>
                         <th class="px-6 py-3 text-start text-xs font-bold text-gray-500 uppercase tracking-wider"><%= t.role %></th>
+                        <th class="px-6 py-3 text-start text-xs font-bold text-gray-500 uppercase tracking-wider"><%= t.driver_commission_label || 'Commission' %></th>
                         <th class="px-6 py-3 text-start text-xs font-bold text-gray-500 uppercase tracking-wider"><%= t.total_orders_handled %></th>
                         <th class="px-6 py-3 text-start text-xs font-bold text-gray-500 uppercase tracking-wider"><%= t.account_status %></th>
                         <th class="px-6 py-3 text-end text-xs font-bold text-gray-500 uppercase tracking-wider"><%= t.actions %></th>
@@ -52,6 +53,9 @@
                                         <%= t.driver %>
                                     </span>
                                 </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-medium" dir="ltr">
+                                    <%= Number(driver.default_commission || 0).toLocaleString() %> <%= t.currency %>
+                                </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-medium">
                                     <%= driver.total_orders %> <%= t.orders %>
                                 </td>
@@ -68,7 +72,7 @@
                         <% }); %>
                     <% } else { %>
                         <tr>
-                            <td colspan="5" class="px-6 py-12 text-center text-gray-500">
+                            <td colspan="6" class="px-6 py-12 text-center text-gray-500">
                                 <i class="ph ph-steering-wheel text-4xl mb-2 text-gray-300"></i>
                                 <p><%= t.no_drivers_found %></p>
                             </td>
