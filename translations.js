@@ -208,6 +208,9 @@ export const translations = {
     chat_placeholder: "Type your question here...",
     send: "Send",
     ai_typing: "AI is thinking...",
+    ai_error: "Sorry, I hit a problem reaching the assistant. Please try again.",
+    ai_busy:
+      "The assistant is busy right now (free-tier limit). Please wait a moment and try again.",
     legal_disclaimer:
       "Note: AI responses are for guidance. Always verify with official manifest documents.",
   },
@@ -418,6 +421,9 @@ export const translations = {
     chat_placeholder: "اكتب سؤالك هنا...",
     send: "إرسال",
     ai_typing: "الذكاء الاصطناعي يفكر...",
+    ai_error: "عذراً، واجهت مشكلة في الوصول إلى المساعد. يرجى المحاولة مرة أخرى.",
+    ai_busy:
+      "المساعد مشغول حالياً (حد الباقة المجانية). يرجى الانتظار قليلاً ثم المحاولة مرة أخرى.",
     legal_disclaimer:
       "ملاحظة: ردود الذكاء الاصطناعي للإرشاد فقط. تأكد دائماً من الوثائق الرسمية.",
   },
@@ -632,6 +638,9 @@ export const translations = {
     chat_placeholder: "پرسیارەکەت لێرە بنووسە...",
     send: "بنێرە",
     ai_typing: "ژیری دەستکرد بیردەکاتەوە...",
+    ai_error: "ببورە، کێشەیەکم لە گەیشتن بە یاریدەدەر هەبوو. تکایە دووبارە هەوڵ بدەرەوە.",
+    ai_busy:
+      "یاریدەدەر ئێستا سەرقاڵە (سنووری بەخۆڕایی). تکایە کەمێک چاوەڕێ بکە و دووبارە هەوڵ بدەرەوە.",
     legal_disclaimer:
       "تێبینی: وەڵامەکانی ژیری دەستکرد تەنها بۆ ڕێنماییە. هەمیشە لە ڕێگەی بەڵگەنامە فەرمییەکانەوە دڵنیابەرەوە.",
   },

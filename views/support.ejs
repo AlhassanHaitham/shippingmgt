@@ -51,19 +51,42 @@
     const chatWindow = document.getElementById('chat-window');
     const typingIndicator = document.getElementById('typing-indicator');
 
-    function addMessage(text, isUser = false) {
+    function addMessage(text, isUser = false, sources = []) {
         const msgDiv = document.createElement('div');
         msgDiv.className = `flex items-start gap-3 ${isUser ? 'flex-row-reverse' : ''}`;
-        
-        msgDiv.innerHTML = `
-            <div class="w-8 h-8 rounded-full ${isUser ? 'bg-gray-800' : 'bg-blue-600'} flex items-center justify-center text-white flex-shrink-0">
-                <i class="ph ${isUser ? 'ph-user' : 'ph-robot'}"></i>
-            </div>
-            <div class="${isUser ? 'bg-blue-600 text-white rounded-se-none' : 'bg-white border border-gray-200 text-gray-800 rounded-ss-none'} rounded-2xl px-4 py-3 shadow-sm max-w-[80%]">
-                <p class="text-sm">${text}</p>
-            </div>
-        `;
-        
+
+        const avatar = document.createElement('div');
+        avatar.className = `w-8 h-8 rounded-full ${isUser ? 'bg-gray-800' : 'bg-blue-600'} flex items-center justify-center text-white flex-shrink-0`;
+        avatar.innerHTML = `<i class="ph ${isUser ? 'ph-user' : 'ph-robot'}"></i>`;
+
+        const bubble = document.createElement('div');
+        bubble.className = `${isUser ? 'bg-blue-600 text-white rounded-se-none' : 'bg-white border border-gray-200 text-gray-800 rounded-ss-none'} rounded-2xl px-4 py-3 shadow-sm max-w-[80%]`;
+
+        // textContent (not innerHTML) so model/user text can never inject markup.
+        const p = document.createElement('p');
+        p.className = 'text-sm whitespace-pre-wrap break-words';
+        p.textContent = text;
+        bubble.appendChild(p);
+
+        // Grounding citations from Google Search, shown under AI replies.
+        if (!isUser && Array.isArray(sources) && sources.length) {
+            const srcWrap = document.createElement('div');
+            srcWrap.className = 'mt-2 pt-2 border-t border-gray-100 flex flex-col gap-1';
+            sources.forEach((s, i) => {
+                const a = document.createElement('a');
+                a.href = s.uri;
+                a.target = '_blank';
+                a.rel = 'noopener noreferrer';
+                a.className = 'text-[11px] text-blue-600 hover:underline truncate';
+                a.title = s.title || s.uri;
+                a.textContent = `${i + 1}. ${s.title || s.uri}`;
+                srcWrap.appendChild(a);
+            });
+            bubble.appendChild(srcWrap);
+        }
+
+        msgDiv.appendChild(avatar);
+        msgDiv.appendChild(bubble);
         chatWindow.appendChild(msgDiv);
         chatWindow.scrollTop = chatWindow.scrollHeight;
     }
@@ -92,7 +115,7 @@
 
             // 4. Add AI Reply to UI
             typingIndicator.classList.add('hidden');
-            addMessage(data.reply, false);
+            addMessage(data.reply, false, data.sources);
         } catch (error) {
             typingIndicator.classList.add('hidden');
             addMessage("Sorry, I'm having trouble connecting to the brain. Try again later!", false);
