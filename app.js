@@ -121,6 +121,9 @@ app.use((req, res, next) => {
   res.locals.dir =
     res.locals.lang === "ar" || res.locals.lang === "ku" ? "rtl" : "ltr";
   res.locals.t = dict;
+  // Current URL, so the language switcher can send the user back to the page
+  // they're on (via /set-lang/:lang?return_to=...) instead of the dashboard.
+  res.locals.currentPath = req.originalUrl;
   next();
 });
 

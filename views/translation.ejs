@@ -30,9 +30,7 @@
   </head>
   <body class="bg-gray-100 min-h-screen font-sans text-gray-900 pb-12">
     <nav class="bg-gray-900 text-white shadow-md">
-      <div
-        class="max-w-7xl mx-auto px-4 h-16 flex justify-between items-center"
-      >
+      <div class="max-w-7xl mx-auto px-4 h-16 flex justify-between items-center">
         <div class="flex items-center gap-2">
           <i class="ph ph-steering-wheel text-3xl text-orange-400"></i>
           <span class="font-bold text-xl tracking-tight"><%= t.driver_portal || 'Driver Portal' %></span>
@@ -43,17 +41,19 @@
             <span><%= driver.partner_name %></span>
           </div>
           <div class="relative group">
-            <button
-              class="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-gray-700 hover:bg-gray-800 text-sm font-bold"
-            >
+            <button class="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-gray-700 hover:bg-gray-800 text-sm font-bold">
               <i class="ph ph-globe"></i> <%= lang.toUpperCase() %>
             </button>
-            <div
-              class="absolute right-0 mt-2 w-32 bg-white text-gray-900 rounded-xl shadow-xl hidden group-hover:block border border-gray-100 overflow-hidden z-50"
-            >
-              <a href="/set-lang/en?return_to=/driver" class="block px-4 py-2 hover:bg-blue-50 text-sm">English</a>
-              <a href="/set-lang/ar?return_to=/driver" class="block px-4 py-2 hover:bg-blue-50 text-sm">العربية</a>
-              <a href="/set-lang/ku?return_to=/driver" class="block px-4 py-2 hover:bg-blue-50 text-sm">کوردی</a>
+            <!-- Wrapper sits flush under the button (top-full) and uses transparent pt-2
+                 padding instead of an mt-2 margin gap, so moving the cursor from the button
+                 to the menu never leaves .group and the menu stays open. group-focus-within
+                 also opens it on keyboard/click focus (so it works on touch too). -->
+            <div class="absolute right-0 top-full pt-2 w-32 hidden group-hover:block group-focus-within:block z-50">
+              <div class="bg-white text-gray-900 rounded-xl shadow-xl border border-gray-100 overflow-hidden">
+                <a href="/set-lang/en?return_to=/driver" class="block px-4 py-2 hover:bg-blue-50 text-sm">English</a>
+                <a href="/set-lang/ar?return_to=/driver" class="block px-4 py-2 hover:bg-blue-50 text-sm">العربية</a>
+                <a href="/set-lang/ku?return_to=/driver" class="block px-4 py-2 hover:bg-blue-50 text-sm">کوردی</a>
+              </div>
             </div>
           </div>
           <form action="/logout" method="POST" class="m-0">
@@ -66,21 +66,15 @@
     </nav>
 
     <main class="max-w-4xl mx-auto px-4 mt-8 space-y-6">
-      <div
-        class="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4"
-      >
+      <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
           <h1 class="text-2xl font-black text-gray-900"><%= t.driver_welcome || 'Welcome, Driver' %></h1>
           <p class="text-gray-500 text-sm mt-1"><%= t.driver_subtitle || 'Manage your route, status, and reports here.' %></p>
         </div>
 
-        <div
-          class="flex items-center gap-3 bg-gray-50 px-4 py-3 rounded-xl border border-gray-200"
-        >
+        <div class="flex items-center gap-3 bg-gray-50 px-4 py-3 rounded-xl border border-gray-200">
           <span class="font-bold text-gray-700 text-sm"><%= t.next_delivery_status || 'Next Delivery Status:' %></span>
-          <div
-            class="relative inline-block w-12 mr-2 align-middle select-none transition duration-200 ease-in"
-          >
+          <div class="relative inline-block w-12 mr-2 align-middle select-none transition duration-200 ease-in">
             <input
               type="checkbox"
               name="toggle"
@@ -88,10 +82,7 @@
               class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer"
               <%= driver.availability === 'available' ? 'checked' : '' %>
             />
-            <label
-              for="statusToggle"
-              class="toggle-label block overflow-hidden h-6 rounded-full bg-gray-300 cursor-pointer"
-            ></label>
+            <label for="statusToggle" class="toggle-label block overflow-hidden h-6 rounded-full bg-gray-300 cursor-pointer"></label>
           </div>
           <span id="statusText" class="font-bold <%= driver.availability === 'available' ? 'text-green-600' : 'text-red-600' %> text-sm">
             <%= driver.availability === 'available' ? (t.available || 'Available') : (t.not_available || 'Not Available') %>
@@ -99,7 +90,6 @@
         </div>
       </div>
 
-      <!-- Pending assigned orders — actionable -->
       <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
         <div class="flex items-center gap-2 text-blue-700 mb-4">
           <i class="ph ph-package text-2xl"></i>
@@ -154,7 +144,6 @@
         <% } %>
       </div>
 
-      <!-- Completed checklists -->
       <%
         const buckets = [
           { label: t.delivered_orders || 'Delivered', icon: 'ph-check-circle', color: 'green', items: delivered },
@@ -193,7 +182,6 @@
       </div>
 
       <div class="grid md:grid-cols-2 gap-6">
-        <!-- Legal clearance -->
         <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
           <div class="flex items-center gap-2 text-blue-700 mb-4">
             <i class="ph ph-file-text text-2xl"></i>
@@ -201,13 +189,10 @@
           </div>
           <p class="text-sm text-gray-500 mb-6"><%= t.legal_docs_desc || 'Submit your manifest and legal approvals to authorities before arriving at the checkpoint.' %></p>
 
-          <form action="/driver/clearance" method="POST" class="space-y-4">
+          <form action="/driver/clearance" method="POST" enctype="multipart/form-data" class="space-y-4">
             <div>
               <label class="block text-sm font-bold text-gray-700 mb-1"><%= t.target_checkpoint || 'Target Checkpoint' %></label>
-              <select
-                name="checkpoint"
-                class="w-full border-gray-300 rounded-xl bg-gray-50 p-3 border focus:border-blue-500 focus:ring-0 outline-none"
-              >
+              <select name="checkpoint" class="w-full border-gray-300 rounded-xl bg-gray-50 p-3 border focus:border-blue-500 focus:ring-0 outline-none">
                 <option>Baghdad South Gate</option>
                 <option>Erbil Main Checkpoint</option>
                 <option>Basra Highway Control</option>
@@ -215,29 +200,29 @@
             </div>
             <div>
               <label class="block text-sm font-bold text-gray-700 mb-1"><%= t.manifest_code || 'Manifest / Clearance Code' %></label>
-              <input
-                type="text"
-                name="manifest_code"
-                placeholder="e.g. CLR-99283-IRQ"
-                class="w-full border-gray-300 rounded-xl bg-gray-50 p-3 border focus:border-blue-500 outline-none"
-              />
+              <input type="text" name="manifest_code" placeholder="e.g. CLR-99283-IRQ" class="w-full border-gray-300 rounded-xl bg-gray-50 p-3 border focus:border-blue-500 outline-none" />
             </div>
-            <button
-              type="submit"
-              class="w-full bg-blue-600 text-white font-bold py-3 rounded-xl hover:bg-blue-700 transition-colors flex justify-center items-center gap-2"
-            >
+            
+            <div>
+              <label class="block text-sm font-bold text-gray-700 mb-1">
+                <i class="ph ph-upload-simple"></i> <%= t.upload_document || 'Upload Scanned Document (PDF/Image)' %>
+              </label>
+              <input type="file" name="legal_file" accept=".pdf, .jpg, .jpeg, .png" required class="w-full border-gray-300 rounded-xl bg-gray-50 p-2 border focus:border-blue-500 text-sm file:mr-4 file:py-1.5 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-black file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 outline-none" />
+            </div>
+
+            <button type="submit" class="w-full bg-blue-600 text-white font-bold py-3 rounded-xl hover:bg-blue-700 transition-colors flex justify-center items-center gap-2">
               <i class="ph ph-paper-plane-right"></i> <%= t.submit_clearance || 'Submit Clearance' %>
             </button>
           </form>
 
           <% if (clearances.length > 0) { %>
             <div class="mt-6 border-t border-gray-100 pt-4">
-              <p class="text-xs font-bold text-gray-500 uppercase mb-2">Recent submissions</p>
+              <p class="text-xs font-bold text-gray-500 uppercase mb-2"><%= t.recent_submissions || 'Recent submissions' %></p>
               <ul class="space-y-1 text-xs text-gray-700">
                 <% clearances.forEach(function(c) { %>
-                  <li class="flex justify-between">
-                    <span><%= c.checkpoint || '—' %> · <%= c.manifest_code || '' %></span>
-                    <span class="text-gray-400"><%= c.status %></span>
+                  <li class="flex justify-between items-center bg-gray-50 p-2 rounded-lg border border-gray-100">
+                    <span><%= c.checkpoint || '—' %> · <strong class="text-blue-700"><%= c.manifest_code || '' %></strong></span>
+                    <span class="text-xs font-semibold px-2 py-0.5 rounded-full bg-yellow-100 text-yellow-800"><%= c.status %></span>
                   </li>
                 <% }); %>
               </ul>
@@ -245,83 +230,83 @@
           <% } %>
         </div>
 
-        <!-- Road report -->
-        <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
-          <div class="flex items-center gap-2 text-orange-600 mb-4">
-            <i class="ph ph-warning-circle text-2xl"></i>
-            <h2 class="text-lg font-bold text-gray-900"><%= t.road_reporting_title || 'Live Road Reporting' %></h2>
-          </div>
-          <p class="text-sm text-gray-500 mb-6"><%= t.road_reporting_desc || 'Alert the network about road conditions, traffic, or sudden delays.' %></p>
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 flex flex-col justify-between">
+          <div>
+            <div class="flex items-center gap-2 text-orange-600 mb-4">
+              <i class="ph ph-warning-circle text-2xl"></i>
+              <h2 class="text-lg font-bold text-gray-900"><%= t.road_reporting_title || 'Live Road Reporting' %></h2>
+            </div>
+            <p class="text-sm text-gray-500 mb-6"><%= t.road_reporting_desc || 'Alert the network about road conditions, traffic, or sudden delays.' %></p>
 
-          <form action="/driver/reports" method="POST" class="space-y-4">
-            <div>
-              <label class="block text-sm font-bold text-gray-700 mb-1"><%= t.report_type || 'Report Type' %></label>
-              <div class="grid grid-cols-2 gap-2">
-                <label class="flex items-center gap-2 p-2 border rounded-lg cursor-pointer hover:bg-orange-50">
-                  <input type="radio" name="report_type" value="traffic" class="text-orange-500 focus:ring-orange-500" checked />
-                  <span class="text-sm font-medium"><%= t.traffic_jam || 'Traffic Jam' %></span>
-                </label>
-                <label class="flex items-center gap-2 p-2 border rounded-lg cursor-pointer hover:bg-orange-50">
-                  <input type="radio" name="report_type" value="checkpoint" class="text-orange-500 focus:ring-orange-500" />
-                  <span class="text-sm font-medium"><%= t.checkpoint_delay || 'Checkpoint Delay' %></span>
-                </label>
-                <label class="flex items-center gap-2 p-2 border rounded-lg cursor-pointer hover:bg-orange-50">
-                  <input type="radio" name="report_type" value="weather" class="text-orange-500 focus:ring-orange-500" />
-                  <span class="text-sm font-medium"><%= t.bad_weather || 'Bad Weather' %></span>
-                </label>
-                <label class="flex items-center gap-2 p-2 border rounded-lg cursor-pointer hover:bg-orange-50">
-                  <input type="radio" name="report_type" value="accident" class="text-orange-500 focus:ring-orange-500" />
-                  <span class="text-sm font-medium"><%= t.accident || 'Accident' %></span>
-                </label>
-              </div>
+            <div class="flex gap-1.5 mb-4 overflow-x-auto pb-1" id="filterContainer">
+              <button onclick="filterFeed('all', this)" class="feed-filter-btn bg-orange-500 text-white text-xs font-bold px-3 py-1.5 rounded-lg whitespace-nowrap transition-all"><%= t.all || 'All' %></button>
+              <button onclick="filterFeed('traffic', this)" class="feed-filter-btn bg-gray-100 text-gray-600 hover:bg-gray-200 text-xs font-bold px-3 py-1.5 rounded-lg whitespace-nowrap transition-all"><%= t.traffic || 'Traffic' %></button>
+              <button onclick="filterFeed('checkpoint', this)" class="feed-filter-btn bg-gray-100 text-gray-600 hover:bg-gray-200 text-xs font-bold px-3 py-1.5 rounded-lg whitespace-nowrap transition-all"><%= t.checkpoints || 'Checkpoints' %></button>
+              <button onclick="filterFeed('weather', this)" class="feed-filter-btn bg-gray-100 text-gray-600 hover:bg-gray-200 text-xs font-bold px-3 py-1.5 rounded-lg whitespace-nowrap transition-all"><%= t.weather || 'Weather' %></button>
+              <button onclick="filterFeed('accident', this)" class="feed-filter-btn bg-gray-100 text-gray-600 hover:bg-gray-200 text-xs font-bold px-3 py-1.5 rounded-lg whitespace-nowrap transition-all"><%= t.accidents || 'Accidents' %></button>
             </div>
-            <div>
-              <label class="block text-sm font-bold text-gray-700 mb-1"><%= t.location_highway || 'Location / Highway' %></label>
-              <div class="relative">
-                <i class="ph ph-map-pin absolute left-3 top-3.5 text-gray-400"></i>
-                <input
-                  type="text"
-                  name="location"
-                  placeholder="e.g. Route 1, near Hillah"
-                  class="w-full pl-10 border-gray-300 rounded-xl bg-gray-50 p-3 border focus:border-orange-500 outline-none"
-                />
-              </div>
+
+            <div class="space-y-2 max-h-60 overflow-y-auto pr-1 mb-6 p-2 bg-gray-50 rounded-xl border border-gray-200" id="reportsChatContainer">
+              <% if (reports.length === 0) { %>
+                <p class="text-xs text-gray-400 italic text-center py-4"><%= t.no_live_alerts || 'No live alerts broadcasted yet.' %></p>
+              <% } else { %>
+                <% reports.forEach(function(r) { %>
+                  <div class="report-item-card bg-white p-3 rounded-xl border border-gray-200 shadow-sm transition-all" data-category="<%= r.report_type %>">
+                    <div class="flex justify-between items-start">
+                      <span class="text-xs font-extrabold uppercase px-2 py-0.5 rounded-md bg-orange-50 text-orange-700">
+                        <%= r.report_type %>
+                      </span>
+                      <span class="text-[10px] text-gray-400 font-mono flex items-center gap-1">
+                        <i class="ph ph-clock"></i> <%= t.live_alert || 'Live Alert' %>
+                      </span>
+                    </div>
+                    <p class="text-xs font-bold text-gray-800 mt-2 flex items-center gap-1">
+                      <i class="ph ph-map-pin text-orange-500"></i> <%= r.location || '—' %>
+                    </p>
+                    <% if (r.details) { %>
+                      <p class="text-xs text-gray-600 mt-1 bg-gray-50 p-2 rounded-lg border border-dashed border-gray-200"><%= r.details %></p>
+                    <% } %>
+                  </div>
+                <% }); %>
+              <% } %>
             </div>
-            <div>
-              <label class="block text-sm font-bold text-gray-700 mb-1"><%= t.details || 'Details' %></label>
-              <textarea
-                rows="2"
-                name="details"
-                placeholder="Briefly describe the situation..."
-                class="w-full border-gray-300 rounded-xl bg-gray-50 p-3 border focus:border-orange-500 outline-none"
-              ></textarea>
+          </div>
+
+          <form action="/driver/reports" method="POST" class="space-y-3 pt-2 border-t border-gray-100">
+            <div class="grid grid-cols-2 gap-1.5">
+              <label class="flex items-center gap-2 p-2 border rounded-lg cursor-pointer bg-white hover:bg-orange-50 text-xs font-bold">
+                <input type="radio" name="report_type" value="traffic" class="text-orange-500 focus:ring-orange-500" checked />
+                <span><%= t.traffic_jam || 'Traffic Jam' %></span>
+              </label>
+              <label class="flex items-center gap-2 p-2 border rounded-lg cursor-pointer bg-white hover:bg-orange-50 text-xs font-bold">
+                <input type="radio" name="report_type" value="checkpoint" class="text-orange-500 focus:ring-orange-500" />
+                <span><%= t.checkpoint_delay || 'Checkpoint Delay' %></span>
+              </label>
+              <label class="flex items-center gap-2 p-2 border rounded-lg cursor-pointer bg-white hover:bg-orange-50 text-xs font-bold">
+                <input type="radio" name="report_type" value="weather" class="text-orange-500 focus:ring-orange-500" />
+                <span><%= t.bad_weather || 'Bad Weather' %></span>
+              </label>
+              <label class="flex items-center gap-2 p-2 border rounded-lg cursor-pointer bg-white hover:bg-orange-50 text-xs font-bold">
+                <input type="radio" name="report_type" value="accident" class="text-orange-500 focus:ring-orange-500" />
+                <span><%= t.accident || 'Accident' %></span>
+              </label>
             </div>
-            <button
-              type="submit"
-              class="w-full bg-orange-500 text-white font-bold py-3 rounded-xl hover:bg-orange-600 transition-colors flex justify-center items-center gap-2"
-            >
+            
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              <input type="text" name="location" required placeholder="<%= t.location_highway || 'Location / Highway (e.g. Route 1)' %>" class="w-full text-xs border-gray-300 rounded-xl bg-gray-50 p-2.5 border focus:border-orange-500 outline-none" />
+              <input type="text" name="details" placeholder="<%= t.details || 'Brief description...' %>" class="w-full text-xs border-gray-300 rounded-xl bg-gray-50 p-2.5 border focus:border-orange-500 outline-none" />
+            </div>
+
+            <button type="submit" class="w-full bg-orange-500 text-white font-bold py-2.5 rounded-xl hover:bg-orange-600 transition-colors flex justify-center items-center gap-2 text-sm">
               <i class="ph ph-broadcast"></i> <%= t.broadcast_report || 'Broadcast Report' %>
             </button>
           </form>
-
-          <% if (reports.length > 0) { %>
-            <div class="mt-6 border-t border-gray-100 pt-4">
-              <p class="text-xs font-bold text-gray-500 uppercase mb-2">Recent reports</p>
-              <ul class="space-y-1 text-xs text-gray-700">
-                <% reports.forEach(function(r) { %>
-                  <li class="flex justify-between gap-2">
-                    <span class="font-semibold capitalize"><%= r.report_type %></span>
-                    <span class="text-gray-500 truncate"><%= r.location || '—' %></span>
-                  </li>
-                <% }); %>
-              </ul>
-            </div>
-          <% } %>
         </div>
       </div>
     </main>
 
     <script>
+      // 1. Status Toggle Logic
       const statusToggle = document.getElementById("statusToggle");
       const statusText = document.getElementById("statusText");
 
@@ -353,6 +338,39 @@
             statusText.className = "font-bold text-red-600 text-sm";
           }
           alert("Could not update status. Please try again.");
+        }
+      });
+
+      // 2. Live chat feed processing for category filtering
+      function filterFeed(category, selectedButton) {
+        // Reset all layout navigation tracking state nodes
+        const filterButtons = document.querySelectorAll('.feed-filter-btn');
+        filterButtons.forEach(btn => {
+          btn.classList.remove('bg-orange-500', 'text-white');
+          btn.classList.add('bg-gray-100', 'text-gray-600', 'hover:bg-gray-200');
+        });
+
+        // Set structural color properties tracking current selection
+        selectedButton.classList.remove('bg-gray-100', 'text-gray-600', 'hover:bg-gray-200');
+        selectedButton.classList.add('bg-orange-500', 'text-white');
+
+        // Process structural layouts within chat element nodes
+        const reportCards = document.querySelectorAll('.report-item-card');
+        reportCards.forEach(card => {
+          const itemType = card.getAttribute('data-category');
+          if (category === 'all' || itemType === category) {
+            card.style.display = 'block';
+          } else {
+            card.style.display = 'none';
+          }
+        });
+      }
+
+      // 3. Auto-scroll chat down block function on fresh document layout evaluations
+      window.addEventListener('DOMContentLoaded', () => {
+        const scrollContainer = document.getElementById('reportsChatContainer');
+        if(scrollContainer) {
+          scrollContainer.scrollTop = scrollContainer.scrollHeight;
         }
       });
     </script>

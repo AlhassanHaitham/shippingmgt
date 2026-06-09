@@ -52,6 +52,23 @@
             </div>
 
             <div class="hidden md:flex items-center gap-4">
+                <!-- Language switcher: opens on hover or keyboard/click focus. The menu sits
+                     flush under the button (top-full) with transparent pt-2 padding instead of
+                     a margin gap, so moving the cursor onto it never closes it. return_to keeps
+                     the user on the current page after switching. -->
+                <div class="relative group">
+                    <button class="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-blue-500 hover:bg-blue-800 text-sm font-bold transition-colors">
+                        <i class="ph ph-globe text-lg"></i> <%= lang.toUpperCase() %>
+                        <i class="ph ph-caret-down text-xs opacity-70"></i>
+                    </button>
+                    <div class="absolute ltr:right-0 rtl:left-0 top-full pt-2 w-36 hidden group-hover:block group-focus-within:block z-50">
+                        <div class="bg-white text-gray-900 rounded-xl shadow-xl border border-gray-100 overflow-hidden">
+                            <a href="/set-lang/en?return_to=<%= encodeURIComponent(locals.currentPath || '/') %>" class="flex items-center justify-between px-4 py-2 hover:bg-blue-50 text-sm <%= lang === 'en' ? 'font-bold text-blue-700 bg-blue-50' : '' %>">English<% if (lang === 'en') { %> <i class="ph ph-check"></i><% } %></a>
+                            <a href="/set-lang/ar?return_to=<%= encodeURIComponent(locals.currentPath || '/') %>" class="flex items-center justify-between px-4 py-2 hover:bg-blue-50 text-sm <%= lang === 'ar' ? 'font-bold text-blue-700 bg-blue-50' : '' %>">العربية<% if (lang === 'ar') { %> <i class="ph ph-check"></i><% } %></a>
+                            <a href="/set-lang/ku?return_to=<%= encodeURIComponent(locals.currentPath || '/') %>" class="flex items-center justify-between px-4 py-2 hover:bg-blue-50 text-sm <%= lang === 'ku' ? 'font-bold text-blue-700 bg-blue-50' : '' %>">کوردی<% if (lang === 'ku') { %> <i class="ph ph-check"></i><% } %></a>
+                        </div>
+                    </div>
+                </div>
                 <div class="flex items-center gap-2 text-sm text-blue-200 px-4 border-gray-400/30 rtl:border-l ltr:border-r" style="border-inline-end-width: 1px;">
                     <i class="ph ph-user-circle text-xl"></i>
                     <span><%= (locals.user && user.username) || 'Guest' %></span>
@@ -82,6 +99,13 @@
                 <a href="/accounting" class="block px-4 py-3 rounded-md text-base font-medium hover:bg-blue-700 transition-colors"><i class="ph ph-calculator inline-block w-6"></i> <%= t.accounting %></a>
             <% } %>
             <a href="/support" class="block px-4 py-3 rounded-md text-base font-medium hover:bg-blue-700 transition-colors"><i class="ph ph-robot inline-block w-6"></i> <%= t.support %></a>
+            <hr class="border-blue-600 my-2">
+            <p class="px-4 text-xs font-bold text-blue-200 uppercase tracking-wide mb-1"><i class="ph ph-globe"></i> <%= t.back_to_lang || 'Language' %></p>
+            <div class="flex gap-2 px-1 mb-1">
+                <a href="/set-lang/en?return_to=<%= encodeURIComponent(locals.currentPath || '/') %>" class="flex-1 text-center px-3 py-2 rounded-md text-sm font-bold border border-blue-600 hover:bg-blue-700 transition-colors <%= lang === 'en' ? 'bg-blue-900' : '' %>">EN</a>
+                <a href="/set-lang/ar?return_to=<%= encodeURIComponent(locals.currentPath || '/') %>" class="flex-1 text-center px-3 py-2 rounded-md text-sm font-bold border border-blue-600 hover:bg-blue-700 transition-colors <%= lang === 'ar' ? 'bg-blue-900' : '' %>">AR</a>
+                <a href="/set-lang/ku?return_to=<%= encodeURIComponent(locals.currentPath || '/') %>" class="flex-1 text-center px-3 py-2 rounded-md text-sm font-bold border border-blue-600 hover:bg-blue-700 transition-colors <%= lang === 'ku' ? 'bg-blue-900' : '' %>">KU</a>
+            </div>
             <hr class="border-blue-600 my-2">
             <form action="/logout" method="POST" class="m-0">
                 <button type="submit" class="w-full text-start px-4 py-3 text-red-300 hover:text-white rounded-md text-base font-bold hover:bg-red-700 transition-colors"><i class="ph ph-sign-out inline-block w-6"></i> <%= t.logout %></button>

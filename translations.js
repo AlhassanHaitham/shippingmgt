@@ -6,7 +6,7 @@ export const translations = {
     merchants: "Merchants",
     accounting: "Accounting",
     logout: "Logout",
-    
+
     // Dashboard Page
     welcome_admin: "Welcome back, Admin!",
     dashboard_desc: "Here is what is happening with your shipments today.",
@@ -22,7 +22,7 @@ export const translations = {
     customer: "Customer",
     action: "Action",
     pending: "Pending",
-    
+
     // Login Page
     login_title: "Sign in to your account",
     login_subtitle: "Enter your details to access the dashboard",
@@ -49,7 +49,8 @@ export const translations = {
     no_orders_match: "No orders match your search criteria.",
     // Merchants Page
     merchants_title: "Merchants & Suppliers",
-    merchants_desc: "Manage your partners, view their order volume, and track payouts.",
+    merchants_desc:
+      "Manage your partners, view their order volume, and track payouts.",
     search_merchants: "Search by name, ID, or orders...",
     merchant_details: "Merchant Details",
     role: "Role",
@@ -79,7 +80,8 @@ export const translations = {
     // New Order - Step 0 (Sender)
     step_0_title: "Step 0: Pick Sender",
     pick_sender: "Pick Sender Merchant",
-    pick_sender_desc: "Choose the merchant whose goods are being shipped. They will receive the remainder after the owner's and driver's commissions.",
+    pick_sender_desc:
+      "Choose the merchant whose goods are being shipped. They will receive the remainder after the owner's and driver's commissions.",
     select_sender: "Select a sender merchant...",
     sender: "Sender",
     change_sender: "Change sender",
@@ -89,7 +91,8 @@ export const translations = {
     done: "Done",
     owner_profit_auto: "Owner profit (default 5)",
     driver_commission_auto: "Driver commission",
-    driver_commission_auto_desc: "Set to 5 automatically when a driver is assigned.",
+    driver_commission_auto_desc:
+      "Set to 5 automatically when a driver is assigned.",
     profit_default_note: "Default 5 — owner's flat fee. Editable.",
     no_sender_yet: "No sender selected yet.",
     // New Order - Step 1
@@ -101,7 +104,8 @@ export const translations = {
     phone_placeholder: "e.g. 0770 123 4567",
     secondary_phone: "Secondary Phone (Optional)",
     is_retrieve: "Retrieve Order (Exchange)",
-    retrieve_desc: "Check this if the driver needs to bring an item back from the customer.",
+    retrieve_desc:
+      "Check this if the driver needs to bring an item back from the customer.",
     order_notes: "Order Notes",
     notes_placeholder: "Any special instructions for the driver...",
     next_location: "Next: Location Details",
@@ -141,7 +145,8 @@ export const translations = {
     profit: "Owner Profit",
     company_commission: "Company Commission",
     merchant_payout: "Merchant Payout",
-    merchant_payout_desc: "What the sender merchant receives after owner, driver, and company cuts.",
+    merchant_payout_desc:
+      "What the sender merchant receives after owner, driver, and company cuts.",
     no_company_assigned: "no company assigned",
     driver_commission_based_on_driver: "Commission is set based on the driver.",
     // Driver portal additions
@@ -163,15 +168,48 @@ export const translations = {
     cancelled_by_customer_orders: "Cancelled by customer",
     nothing_here_yet: "Nothing here yet.",
     driver_commission_label: "Driver Commission",
+    upload_document: "Upload Scanned Document (PDF/Image)",
+    all: "All",
+    traffic: "Traffic",
+    checkpoints: "Checkpoints",
+    weather: "Weather",
+    accidents: "Accidents",
+    live_alert: "Live Alert",
+    // Driver portal — report types & feed
+    traffic_jam: "Traffic Jam",
+    checkpoint_delay: "Checkpoint Delay",
+    bad_weather: "Bad Weather",
+    accident: "Accident",
+    recent_submissions: "Recent submissions",
+    no_live_alerts: "No live alerts broadcasted yet.",
+    // Landing Page
+    landing_hero_title: "Logistics Management",
+    landing_hero_highlight: "Reimagined for Iraq.",
+    landing_hero_subtitle:
+      "The all-in-one platform connecting Merchants, Drivers, and Admins. Streamline your shipments across every province.",
+    request_account: "Request an Account",
+    explore_features: "Explore Features",
+    feature_enterprise_title: "Enterprise Control",
+    feature_enterprise_desc:
+      "Full oversight for delivery companies. Manage orders, partners, and company-wide accounting in one dashboard.",
+    feature_merchant_title: "Merchant Portal",
+    feature_merchant_desc:
+      "Merchants can track their own shipments, view balances, and manage commissions without seeing internal company data.",
+    feature_driver_title: "Driver Network",
+    feature_driver_desc:
+      "Real-time road reporting for traffic, checkpoints, and weather updates across Iraq and the KRG region.",
+    landing_footer: "© 2024 ShipFlow Logistics System. All rights reserved.",
     // ... (existing words)
     support: "AI Support",
     // ...
     support_title: "AI Logistics Assistant",
-    support_desc: "Ask our AI about Iraqi transport laws, customs, or provincial regulations.",
+    support_desc:
+      "Ask our AI about Iraqi transport laws, customs, or provincial regulations.",
     chat_placeholder: "Type your question here...",
     send: "Send",
     ai_typing: "AI is thinking...",
-    legal_disclaimer: "Note: AI responses are for guidance. Always verify with official manifest documents."
+    legal_disclaimer:
+      "Note: AI responses are for guidance. Always verify with official manifest documents.",
   },
   ar: {
     // Navigation
@@ -180,7 +218,7 @@ export const translations = {
     merchants: "التجار",
     accounting: "الحسابات",
     logout: "تسجيل الخروج",
-    
+
     // Dashboard Page
     welcome_admin: "مرحباً بعودتك، أيها المسؤول!",
     dashboard_desc: "إليك ما يحدث مع شحناتك اليوم.",
@@ -196,7 +234,7 @@ export const translations = {
     customer: "العميل",
     action: "إجراء",
     pending: "قيد الانتظار",
-    
+
     // Login Page
     login_title: "تسجيل الدخول إلى حسابك",
     login_subtitle: "أدخل بياناتك للوصول إلى لوحة القيادة",
@@ -253,7 +291,8 @@ export const translations = {
     // New Order - Step 0 (Sender)
     step_0_title: "الخطوة 0: اختيار المرسل",
     pick_sender: "اختر التاجر المرسل",
-    pick_sender_desc: "اختر التاجر الذي يتم شحن بضاعته. هو من سيستلم المتبقي بعد عمولة المالك والسائق.",
+    pick_sender_desc:
+      "اختر التاجر الذي يتم شحن بضاعته. هو من سيستلم المتبقي بعد عمولة المالك والسائق.",
     select_sender: "اختر تاجراً مرسلاً...",
     sender: "المرسل",
     change_sender: "تغيير المرسل",
@@ -275,7 +314,8 @@ export const translations = {
     phone_placeholder: "مثال: 0770 123 4567",
     secondary_phone: "رقم هاتف بديل (اختياري)",
     is_retrieve: "طلب استرجاع (استبدال)",
-    retrieve_desc: "حدد هذا الخيار إذا كان السائق بحاجة إلى إرجاع عنصر من العميل.",
+    retrieve_desc:
+      "حدد هذا الخيار إذا كان السائق بحاجة إلى إرجاع عنصر من العميل.",
     order_notes: "ملاحظات الطلب",
     notes_placeholder: "أي تعليمات خاصة للسائق...",
     next_location: "التالي: تفاصيل الموقع",
@@ -315,7 +355,8 @@ export const translations = {
     profit: "ربح المالك",
     company_commission: "عمولة الشركة",
     merchant_payout: "متبقي التاجر",
-    merchant_payout_desc: "ما يستلمه التاجر المرسل بعد حصة المالك والسائق والشركة.",
+    merchant_payout_desc:
+      "ما يستلمه التاجر المرسل بعد حصة المالك والسائق والشركة.",
     no_company_assigned: "لم يتم تعيين شركة",
     driver_commission_based_on_driver: "العمولة محددة بناءً على السائق.",
     // Driver portal additions
@@ -337,16 +378,48 @@ export const translations = {
     cancelled_by_customer_orders: "ألغيت من قبل العميل",
     nothing_here_yet: "لا يوجد شيء هنا بعد.",
     driver_commission_label: "عمولة السائق",
+    upload_document: "تحميل المستند الممسوح ضوئياً (PDF/صورة)",
+    all: "الكل",
+    traffic: "حركة المرور",
+    checkpoints: "النقاط الأمنية",
+    weather: "الطقس",
+    accidents: "الحوادث",
+    live_alert: "تنبيه مباشر",
+    // Driver portal — report types & feed
+    traffic_jam: "ازدحام مروري",
+    checkpoint_delay: "تأخير عند النقطة الأمنية",
+    bad_weather: "طقس سيئ",
+    accident: "حادث",
+    recent_submissions: "أحدث الطلبات المقدمة",
+    no_live_alerts: "لم يتم بث أي تنبيهات مباشرة بعد.",
+    // Landing Page
+    landing_hero_title: "إدارة الخدمات اللوجستية",
+    landing_hero_highlight: "أُعيد تصميمها للعراق.",
+    landing_hero_subtitle:
+      "المنصة الشاملة التي تربط التجار والسائقين والمسؤولين. بسّط شحناتك في جميع المحافظات.",
+    request_account: "اطلب حساباً",
+    explore_features: "استكشف الميزات",
+    feature_enterprise_title: "تحكم مؤسسي",
+    feature_enterprise_desc:
+      "رقابة كاملة لشركات التوصيل. أدر الطلبات والشركاء وحسابات الشركة بالكامل من لوحة تحكم واحدة.",
+    feature_merchant_title: "بوابة التاجر",
+    feature_merchant_desc:
+      "يمكن للتجار تتبع شحناتهم الخاصة وعرض أرصدتهم وإدارة عمولاتهم دون الاطلاع على بيانات الشركة الداخلية.",
+    feature_driver_title: "شبكة السائقين",
+    feature_driver_desc:
+      "تقارير طرق فورية لحركة المرور والنقاط الأمنية وتحديثات الطقس في جميع أنحاء العراق وإقليم كردستان.",
+    landing_footer: "© 2024 نظام ShipFlow للخدمات اللوجستية. جميع الحقوق محفوظة.",
     // ... (existing words)
     support: "الدعم الذكي",
     // ...
     support_title: "مساعد اللوجستيات الذكي",
-    support_desc: "اسأل الذكاء الاصطناعي عن قوانين النقل العراقية، الجمارك، أو اللوائح المحلية.",
+    support_desc:
+      "اسأل الذكاء الاصطناعي عن قوانين النقل العراقية، الجمارك، أو اللوائح المحلية.",
     chat_placeholder: "اكتب سؤالك هنا...",
     send: "إرسال",
     ai_typing: "الذكاء الاصطناعي يفكر...",
-    legal_disclaimer: "ملاحظة: ردود الذكاء الاصطناعي للإرشاد فقط. تأكد دائماً من الوثائق الرسمية."
-    
+    legal_disclaimer:
+      "ملاحظة: ردود الذكاء الاصطناعي للإرشاد فقط. تأكد دائماً من الوثائق الرسمية.",
   },
   ku: {
     // Navigation
@@ -355,7 +428,7 @@ export const translations = {
     merchants: "بازرگانان",
     accounting: "ژمێریاری",
     logout: "چوونە دەرەوە",
-    
+
     // Dashboard Page
     welcome_admin: "بەخێربێیتەوە، بەڕێوەبەر!",
     dashboard_desc: "لێرەدا ئەوەی ئەمڕۆ بەسەر بارەکانتدا دێت دەبینیت.",
@@ -371,7 +444,7 @@ export const translations = {
     customer: "کڕیار",
     action: "کردار",
     pending: "لە چاوەڕوانیدایە",
-    
+
     // Login Page
     login_title: "چوونەژوورەوە بۆ هەژمارەکەت",
     login_subtitle: "زانیارییەکانت بنووسە بۆ چوونە ناو داشبۆرد",
@@ -398,7 +471,8 @@ export const translations = {
     no_orders_match: "هیچ داواکارییەک لەگەڵ گەڕانەکەتدا یەکناگرێتەوە.",
     // Merchants Page
     merchants_title: "بازرگانان و دابینکەران",
-    merchants_desc: "بەڕێوەبردنی هاوبەشەکانت، بینینی قەبارەی داواکارییەکانیان، و چاودێریکردنی پارەدانەکان.",
+    merchants_desc:
+      "بەڕێوەبردنی هاوبەشەکانت، بینینی قەبارەی داواکارییەکانیان، و چاودێریکردنی پارەدانەکان.",
     search_merchants: "گەڕان بەپێی ناو، ئایدی، یان داواکارییەکان...",
     merchant_details: "وردەکارییەکانی بازرگان",
     role: "ڕۆڵ",
@@ -411,7 +485,8 @@ export const translations = {
     no_merchants_match: "هیچ بازرگانێک لەگەڵ گەڕانەکەتدا یەکناگرێتەوە.",
     // Accounting Page
     accounting_title: "داشبۆردی دارایی",
-    accounting_desc: "چاودێری داهاتی کۆمپانیا، پارەی هاوبەشەکان، و قازانجی پوخت بکە.",
+    accounting_desc:
+      "چاودێری داهاتی کۆمپانیا، پارەی هاوبەشەکان، و قازانجی پوخت بکە.",
     accounts_rec: "پارەی وەرگیراو (AR)",
     ar_desc: "کۆی کرێی گەیاندنی وەرگیراو",
     accounts_pay: "پارەی دراو (AP)",
@@ -424,11 +499,13 @@ export const translations = {
     total_owed: "کۆی بڕی قەرزدار",
     orders_pending: "داواکاری چاوەڕێی پارەدانن",
     settle_balance: "یەکلاکردنەوەی باڵانس",
-    no_balances: "هیچ باڵانسێکی هەڵپەسێردراو نییە! هەموو بازرگانان بە تەواوی پارەیان پێدراوە.",
+    no_balances:
+      "هیچ باڵانسێکی هەڵپەسێردراو نییە! هەموو بازرگانان بە تەواوی پارەیان پێدراوە.",
     // New Order - Step 0 (Sender)
     step_0_title: "هەنگاوی 0: هەڵبژاردنی نێرەر",
     pick_sender: "بازرگانی نێرەر هەڵبژێرە",
-    pick_sender_desc: "بازرگانێک هەڵبژێرە کە کاڵاکانی دەنێردرێن. ئەو پاشماوەی پارە وەردەگرێت پاش کۆمیشنی خاوەن و شۆفێر.",
+    pick_sender_desc:
+      "بازرگانێک هەڵبژێرە کە کاڵاکانی دەنێردرێن. ئەو پاشماوەی پارە وەردەگرێت پاش کۆمیشنی خاوەن و شۆفێر.",
     select_sender: "بازرگانێکی نێرەر هەڵبژێرە...",
     sender: "نێرەر",
     change_sender: "گۆڕینی نێرەر",
@@ -438,7 +515,8 @@ export const translations = {
     done: "تەواو",
     owner_profit_auto: "قازانجی خاوەن (بنەڕەتی 5)",
     driver_commission_auto: "کۆمیشنی شۆفێر",
-    driver_commission_auto_desc: "بە شێوەی خۆکار دەکرێتە 5 کاتێک شۆفێرێک دەستنیشان دەکرێت.",
+    driver_commission_auto_desc:
+      "بە شێوەی خۆکار دەکرێتە 5 کاتێک شۆفێرێک دەستنیشان دەکرێت.",
     profit_default_note: "بنەڕەتی 5 — کرێی جێگیری خاوەن. دەگۆڕدرێت.",
     no_sender_yet: "هێشتا هیچ نێرەرێک هەڵنەبژێردراوە.",
     // New Order - Step 1
@@ -450,7 +528,8 @@ export const translations = {
     phone_placeholder: "نموونە: 0770 123 4567",
     secondary_phone: "مۆبایلی دووەم (ئارەزوومەندانە)",
     is_retrieve: "گەڕاندنەوەی داواکاری (گۆڕینەوە)",
-    retrieve_desc: "ئەمە دیاری بکە ئەگەر پێویستە شۆفێرەکە شتێک لە کڕیارەوە بگەڕێنێتەوە.",
+    retrieve_desc:
+      "ئەمە دیاری بکە ئەگەر پێویستە شۆفێرەکە شتێک لە کڕیارەوە بگەڕێنێتەوە.",
     order_notes: "تێبینییەکانی داواکاری",
     notes_placeholder: "هەر ڕێنماییەکی تایبەت بۆ شۆفێرەکە...",
     next_location: "دواتر: وردەکارییەکانی ناونیشان",
@@ -490,7 +569,8 @@ export const translations = {
     profit: "قازانجی خاوەن",
     company_commission: "پشکی کۆمپانیا",
     merchant_payout: "ماوەی بازرگان",
-    merchant_payout_desc: "ئەوەی نێرەرە بازرگان وەری دەگرێت پاش پشکی خاوەن و شۆفێر و کۆمپانیا.",
+    merchant_payout_desc:
+      "ئەوەی نێرەرە بازرگان وەری دەگرێت پاش پشکی خاوەن و شۆفێر و کۆمپانیا.",
     no_company_assigned: "هیچ کۆمپانیایەک دیاری نەکراوە",
     driver_commission_based_on_driver: "پشک بەپێی شۆفێر دیاری دەکرێت.",
     // Driver portal additions
@@ -512,15 +592,47 @@ export const translations = {
     cancelled_by_customer_orders: "لەلایەن کڕیارەوە هەڵوەشاون",
     nothing_here_yet: "هێشتا هیچ نییە.",
     driver_commission_label: "پشکی شۆفێر",
+    upload_document: "بارکردنی دۆکیۆمێنتی سکانکراو (PDF/وێنە)",
+    all: "هەموو",
+    traffic: "هاتوچۆ",
+    checkpoints: "بازگەکان",
+    weather: "کەشوهەوا",
+    accidents: "ڕووداوەکان",
+    live_alert: "ئاگادارکردنەوەی ڕاستەوخۆ",
+    // Driver portal — report types & feed
+    traffic_jam: "قەرەباڵغی هاتوچۆ",
+    checkpoint_delay: "دواکەوتن لە بازگە",
+    bad_weather: "کەشوهەوای خراپ",
+    accident: "ڕووداو",
+    recent_submissions: "ناردنە دواییەکان",
+    no_live_alerts: "هێشتا هیچ ئاگادارکردنەوەیەکی ڕاستەوخۆ بڵاونەکراوەتەوە.",
+    // Landing Page
+    landing_hero_title: "بەڕێوەبردنی لۆجستیک",
+    landing_hero_highlight: "لە نوێوە بۆ عێراق داڕێژراوەتەوە.",
+    landing_hero_subtitle:
+      "پلاتفۆرمە هەمەلایەنەکە کە بازرگانان و شۆفێران و بەڕێوەبەران بەیەکەوە دەبەستێتەوە. بارەکانت لە هەموو پارێزگاکاندا ئاسان بکە.",
+    request_account: "داوای هەژمار بکە",
+    explore_features: "تایبەتمەندییەکان ببینە",
+    feature_enterprise_title: "کۆنترۆڵی دامەزراوەیی",
+    feature_enterprise_desc:
+      "چاودێری تەواو بۆ کۆمپانیاکانی گەیاندن. داواکارییەکان، هاوبەشەکان و ژمێریاری کۆمپانیا لە یەک داشبۆرددا بەڕێوەببە.",
+    feature_merchant_title: "دەرگای بازرگان",
+    feature_merchant_desc:
+      "بازرگانان دەتوانن بارەکانی خۆیان بەدوادابچن، باڵانس ببینن، و کۆمیشنەکان بەڕێوەببەن بەبێ بینینی زانیاری ناوخۆیی کۆمپانیا.",
+    feature_driver_title: "تۆڕی شۆفێران",
+    feature_driver_desc:
+      "ڕاپۆرتی ڕاستەوخۆی ڕێگا بۆ هاتوچۆ، بازگەکان، و نوێکارییەکانی کەشوهەوا لە سەرتاسەری عێراق و هەرێمی کوردستان.",
+    landing_footer: "© 2024 سیستەمی لۆجستیکی ShipFlow. هەموو مافەکان پارێزراون.",
     // ... (existing words)
     support: "پشتیوانی ژیری",
     // ...
     support_title: "یاریدەدەری ژیری گواستنەوە",
-    support_desc: "لە ژیری دەستکرد بپرسە دەربارەی یاساکانی گواستنەوەی عێراق، گومرگ، یان ڕێنماییەکان.",
+    support_desc:
+      "لە ژیری دەستکرد بپرسە دەربارەی یاساکانی گواستنەوەی عێراق، گومرگ، یان ڕێنماییەکان.",
     chat_placeholder: "پرسیارەکەت لێرە بنووسە...",
     send: "بنێرە",
     ai_typing: "ژیری دەستکرد بیردەکاتەوە...",
-    legal_disclaimer: "تێبینی: وەڵامەکانی ژیری دەستکرد تەنها بۆ ڕێنماییە. هەمیشە لە ڕێگەی بەڵگەنامە فەرمییەکانەوە دڵنیابەرەوە."
-  
-  }
+    legal_disclaimer:
+      "تێبینی: وەڵامەکانی ژیری دەستکرد تەنها بۆ ڕێنماییە. هەمیشە لە ڕێگەی بەڵگەنامە فەرمییەکانەوە دڵنیابەرەوە.",
+  },
 };

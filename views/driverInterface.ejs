@@ -26,31 +26,38 @@
             >
               <i class="ph ph-globe text-xl"></i> <%= lang.toUpperCase() %>
             </button>
+            <!-- Flush wrapper (top-full) with transparent pt-2 padding instead of an mt-2
+                 gap keeps the menu open while moving the cursor from the button to the menu.
+                 group-focus-within also opens it on keyboard/click/touch focus. -->
             <div
-              class="absolute right-0 mt-2 w-32 bg-white rounded-xl shadow-xl hidden group-hover:block border border-gray-100 overflow-hidden"
+              class="absolute right-0 top-full pt-2 w-32 hidden group-hover:block group-focus-within:block z-50"
             >
-              <a
-                href="/set-lang/en"
-                class="block px-4 py-2 hover:bg-blue-50 text-sm"
-                >English</a
+              <div
+                class="bg-white rounded-xl shadow-xl border border-gray-100 overflow-hidden"
               >
-              <a
-                href="/set-lang/ar"
-                class="block px-4 py-2 hover:bg-blue-50 text-sm"
-                >العربية</a
-              >
-              <a
-                href="/set-lang/ku"
-                class="block px-4 py-2 hover:bg-blue-50 text-sm"
-                >کوردی</a
-              >
+                <a
+                  href="/set-lang/en"
+                  class="block px-4 py-2 hover:bg-blue-50 text-sm"
+                  >English</a
+                >
+                <a
+                  href="/set-lang/ar"
+                  class="block px-4 py-2 hover:bg-blue-50 text-sm"
+                  >العربية</a
+                >
+                <a
+                  href="/set-lang/ku"
+                  class="block px-4 py-2 hover:bg-blue-50 text-sm"
+                  >کوردی</a
+                >
+              </div>
             </div>
           </div>
           <a
             href="/login"
             class="bg-blue-600 text-white px-5 py-2.5 rounded-xl font-bold text-sm hover:bg-blue-700 transition-all"
           >
-            <%= t.login || 'Sign In' %>
+            <%= t.sign_in_btn || 'Sign In' %>
           </a>
         </div>
       </div>
@@ -59,26 +66,25 @@
     <header class="pt-40 pb-20 px-6">
       <div class="max-w-5xl mx-auto text-center space-y-8">
         <h1 class="text-5xl md:text-7xl font-black text-gray-900 leading-tight">
-          Logistics Management <br /><span class="text-blue-600"
-            >Reimagined for Iraq.</span
+          <%= t.landing_hero_title || 'Logistics Management' %> <br /><span class="text-blue-600"
+            ><%= t.landing_hero_highlight || 'Reimagined for Iraq.' %></span
           >
         </h1>
         <p class="text-xl text-gray-600 max-w-2xl mx-auto">
-          The all-in-one platform connecting Merchants, Drivers, and Admins.
-          Streamline your shipments across every province.
+          <%= t.landing_hero_subtitle || 'The all-in-one platform connecting Merchants, Drivers, and Admins. Streamline your shipments across every province.' %>
         </p>
         <div class="flex flex-wrap justify-center gap-4">
           <a
             href="/request-account"
             class="px-8 py-4 bg-gray-900 text-white rounded-2xl font-bold hover:scale-105 transition-transform flex items-center gap-2"
           >
-            <i class="ph ph-user-plus text-xl"></i> Request an Account
+            <i class="ph ph-user-plus text-xl"></i> <%= t.request_account || 'Request an Account' %>
           </a>
           <a
             href="#features"
             class="px-8 py-4 bg-gray-100 text-gray-700 rounded-2xl font-bold hover:bg-gray-200 transition-all"
           >
-            Explore Features
+            <%= t.explore_features || 'Explore Features' %>
           </a>
         </div>
       </div>
@@ -95,10 +101,9 @@
             >
               <i class="ph ph-shield-check text-3xl"></i>
             </div>
-            <h3 class="text-xl font-bold mb-3">Enterprise Control</h3>
+            <h3 class="text-xl font-bold mb-3"><%= t.feature_enterprise_title || 'Enterprise Control' %></h3>
             <p class="text-gray-500 leading-relaxed">
-              Full oversight for delivery companies. Manage orders, partners,
-              and company-wide accounting in one dashboard.
+              <%= t.feature_enterprise_desc || 'Full oversight for delivery companies. Manage orders, partners, and company-wide accounting in one dashboard.' %>
             </p>
           </div>
 
@@ -110,10 +115,9 @@
             >
               <i class="ph ph-storefront text-3xl"></i>
             </div>
-            <h3 class="text-xl font-bold mb-3">Merchant Portal</h3>
+            <h3 class="text-xl font-bold mb-3"><%= t.feature_merchant_title || 'Merchant Portal' %></h3>
             <p class="text-gray-500 leading-relaxed">
-              Merchants can track their own shipments, view balances, and manage
-              commissions without seeing internal company data.
+              <%= t.feature_merchant_desc || 'Merchants can track their own shipments, view balances, and manage commissions without seeing internal company data.' %>
             </p>
           </div>
 
@@ -125,10 +129,9 @@
             >
               <i class="ph ph-steering-wheel text-3xl"></i>
             </div>
-            <h3 class="text-xl font-bold mb-3">Driver Network</h3>
+            <h3 class="text-xl font-bold mb-3"><%= t.feature_driver_title || 'Driver Network' %></h3>
             <p class="text-gray-500 leading-relaxed">
-              Real-time road reporting for traffic, checkpoints, and weather
-              updates across Iraq and the KRG region.
+              <%= t.feature_driver_desc || 'Real-time road reporting for traffic, checkpoints, and weather updates across Iraq and the KRG region.' %>
             </p>
           </div>
         </div>
@@ -138,7 +141,7 @@
     <footer
       class="py-12 border-t border-gray-100 text-center text-gray-400 text-sm"
     >
-      <p>&copy; 2024 ShipFlow Logistics System. All rights reserved.</p>
+      <p><%= t.landing_footer || '© 2024 ShipFlow Logistics System. All rights reserved.' %></p>
     </footer>
   </body>
 </html>
